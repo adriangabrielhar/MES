@@ -2,6 +2,11 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
+# Ignoră aceste foldere oriunde s-ar afla în structură
+bin/
+obj/
+.vs/
+
+# Fisiere specifice generate de VS
 /MainApplication/.vs/MainApplication.slnx
-/.vs
 /MainApplication/.vs/ProjectEvaluation
