@@ -8,23 +8,23 @@
     "net10.0-windows7.0": []
   },
   "packageFolders": {
-    "C:\\Users\\adi\\.nuget\\packages\\": {},
+    "C:\\Users\\Asus\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\adi\\source\\repos\\adriangabrielhar\\MES\\MainApplication\\MainApplication\\MainApplication.csproj",
+      "projectUniqueName": "C:\\Users\\Asus\\source\\repos\\MES\\MainApplication\\MainApplication\\MainApplication.csproj",
       "projectName": "MainApplication",
-      "projectPath": "C:\\Users\\adi\\source\\repos\\adriangabrielhar\\MES\\MainApplication\\MainApplication\\MainApplication.csproj",
-      "packagesPath": "C:\\Users\\adi\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\adi\\source\\repos\\adriangabrielhar\\MES\\MainApplication\\MainApplication\\obj\\",
+      "projectPath": "C:\\Users\\Asus\\source\\repos\\MES\\MainApplication\\MainApplication\\MainApplication.csproj",
+      "packagesPath": "C:\\Users\\Asus\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Asus\\source\\repos\\MES\\MainApplication\\MainApplication\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\adi\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Asus\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -33,6 +33,7 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
