@@ -5,8 +5,119 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MainApplication"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="HMI - Terminal Access System" Height="600" Width="1000"
+        WindowStartupLocation="CenterScreen"
+        Background="#D0D4D9">
 
-    </Grid>
+	<Grid>
+		<Grid.Background>
+			<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+				<GradientStop Color="#BEC3C9" Offset="0"/>
+				<GradientStop Color="#D0D4D9" Offset="1"/>
+			</LinearGradientBrush>
+		</Grid.Background>
+
+		<Border Width="400" Height="480"
+                Background="#F0F0F0"
+                BorderBrush="#2C5AA0"
+                BorderThickness="4"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center">
+
+			<Border.Effect>
+				<DropShadowEffect BlurRadius="25" Direction="315" Opacity="0.5"/>
+			</Border.Effect>
+
+			<StackPanel Margin="40,30,40,30">
+
+				<TextBlock Text="USER LOGIN"
+                           FontSize="26"
+                           FontWeight="Bold"
+                           Foreground="#2C5AA0"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,5"/>
+
+				<TextBlock Text="FEDERAL XACT-FIL SECURITY"
+                           FontSize="11"
+                           Foreground="#606060"
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,20"/>
+
+				<Separator Background="#2C5AA0" Height="2" Margin="0,0,0,35"/>
+
+				<TextBlock Text="USERNAME"
+                           FontWeight="Bold"
+                           FontSize="13"
+                           Foreground="#2C5AA0"
+                           Margin="0,0,0,8"/>
+
+				<TextBox x:Name="txtUsername"
+                         Height="50"
+                         Margin="0,0,0,25"
+                         FontSize="22"
+                         FontWeight="SemiBold"
+                         VerticalContentAlignment="Center"
+                         Padding="10,0"
+                         Background="White"
+                         BorderBrush="#808080"
+                         BorderThickness="2"/>
+
+				<TextBlock Text="PASSWORD"
+                           FontWeight="Bold"
+                           FontSize="13"
+                           Foreground="#2C5AA0"
+                           Margin="0,0,0,8"/>
+
+				<PasswordBox x:Name="txtPassword"
+                             Height="50"
+                             Margin="0,0,0,45"
+                             FontSize="22"
+                             VerticalContentAlignment="Center"
+                             Padding="10,0"
+                             Background="White"
+                             BorderBrush="#808080"
+                             BorderThickness="2"/>
+
+				<Button x:Name="btnLogin"
+                        Content="ACCESS SYSTEM"
+                        Height="65"
+                        Background="#2C5AA0"
+                        Foreground="White"
+                        FontWeight="Bold"
+                        FontSize="18"
+                        Cursor="Hand"
+                        IsDefault="True"
+                        Click="LoginButton_Click">
+					<Button.Style>
+						<Style TargetType="Button">
+							<Setter Property="Template">
+								<Setter.Value>
+									<ControlTemplate TargetType="Button">
+										<Border Background="{TemplateBinding Background}"
+                                                BorderBrush="White"
+                                                BorderThickness="1">
+											<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+										</Border>
+									</ControlTemplate>
+								</Setter.Value>
+							</Setter>
+							<Style.Triggers>
+								<Trigger Property="IsMouseOver" Value="True">
+									<Setter Property="Background" Value="#1A3D73"/>
+								</Trigger>
+							</Style.Triggers>
+						</Style>
+					</Button.Style>
+				</Button>
+
+				<TextBlock Text="UNAUTHORIZED ACCESS PROHIBITED"
+                           HorizontalAlignment="Center"
+                           Margin="0,25,0,0"
+                           FontSize="9"
+                           Foreground="#A0A0A0"
+                           FontWeight="Bold"/>
+			</StackPanel>
+		</Border>
+	</Grid>
 </Window>
