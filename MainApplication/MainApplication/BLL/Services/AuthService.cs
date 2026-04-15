@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using MainApplication.Models;
 
-namespace MainApplication.Services
+namespace MainApplication.BLL.Services
 {
     class AuthService
     {
