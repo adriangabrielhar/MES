@@ -1,0 +1,66 @@
+﻿<Window x:Class="MainApplication.Views.LineFaceplate"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Line Faceplate - Control Manual" Height="550" Width="650"
+        WindowStartupLocation="CenterOwner" Background="#F0F0F0" ResizeMode="NoResize">
+
+    <Grid Margin="25">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="#2C5AA0" Padding="15" Margin="0,0,0,20">
+            <DockPanel>
+                <StackPanel>
+                    <TextBlock x:Name="txtLineName" Text="LINE #01" Foreground="White" FontSize="22" FontWeight="Bold"/>
+                    <TextBlock x:Name="txtProduct" Text="Product: Bottle 0.5L" Foreground="#D0D4D9" FontSize="14"/>
+                </StackPanel>
+                <Border x:Name="brdStatusIndicator" HorizontalAlignment="Right" VerticalAlignment="Center" 
+                        CornerRadius="15" Padding="15,5" Background="LimeGreen">
+                    <TextBlock x:Name="txtStatus" Text="READY" Foreground="White" FontWeight="Bold"/>
+                </Border>
+            </DockPanel>
+        </Border>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <GroupBox Header="Maintenance Info" Margin="5">
+                <StackPanel Margin="10">
+                    <TextBlock Text="Last Service Date:" Foreground="Gray" FontSize="11"/>
+                    <TextBlock x:Name="txtLastService" Text="2026-02-10" FontWeight="Bold" Margin="0,0,0,15"/>
+
+                    <TextBlock Text="Total Operating Hours:" Foreground="Gray" FontSize="11"/>
+                    <TextBlock Text="1,240 h" FontWeight="Bold" Margin="0,0,0,15"/>
+
+                    <Button Content="SEND SERVICE REQUEST" Background="#FF8C00" Foreground="White" 
+                            FontWeight="Bold" Height="35" Click="btnMaintenance_Click"/>
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Header="Live Parameters" Grid.Column="1" Margin="5">
+                <StackPanel Margin="10">
+                    <TextBlock Text="Motor Load:" Foreground="Gray" FontSize="11"/>
+                    <ProgressBar Value="65" Height="15" Foreground="#2C5AA0" Margin="0,5"/>
+
+                    <TextBlock Text="Internal Temp:" Foreground="Gray" FontSize="11" Margin="0,10,0,0"/>
+                    <TextBlock Text="42.5 °C" FontWeight="Bold" FontSize="18" Foreground="#A00000"/>
+                </StackPanel>
+            </GroupBox>
+        </Grid>
+
+        <StackPanel Grid.Row="2" Margin="0,20,0,0">
+            <Separator Background="#2C5AA0" Margin="0,0,0,15"/>
+            <UniformGrid Columns="3" Height="70">
+                <Button Content="START" Background="Green" Foreground="White" FontWeight="Bold" FontSize="16" Margin="5" Click="btnStart_Click"/>
+                <Button Content="STOP" Background="DarkOrange" Foreground="White" FontWeight="Bold" FontSize="16" Margin="5" Click="btnStop_Click"/>
+                <Button Content="E-STOP" Background="Red" Foreground="White" FontWeight="Bold" FontSize="16" Margin="5" Click="btnEStop_Click"/>
+            </UniformGrid>
+        </StackPanel>
+    </Grid>
+</Window>

@@ -1,0 +1,115 @@
+﻿<Window x:Class="MainApplication.Views.DashboardWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Admin Console" Height="800" Width="1200" Background="#F0F2F5" WindowStartupLocation="CenterScreen">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="60"/>
+			<RowDefinition Height="*"/>
+		</Grid.RowDefinitions>
+
+		<Border Background="#1A3D73">
+			<DockPanel Margin="20,0">
+				<TextBlock Text="XACT-FIL ADMIN" Foreground="White" VerticalAlignment="Center" FontWeight="Bold" FontSize="18"/>
+				<Button Content="LOGOUT" Click="btnLogout_Click" DockPanel.Dock="Right" Width="80" Height="30" Background="#D9534F" Foreground="White"/>
+			</DockPanel>
+		</Border>
+
+		<TabControl Grid.Row="1" Background="Transparent" BorderThickness="0">
+			<TabItem Header="OVERVIEW">
+				<Border Padding="20">
+					<UniformGrid Columns="3">
+						<Border Background="White" Margin="10" CornerRadius="8">
+							<StackPanel VerticalAlignment="Center">
+								<TextBlock Text="TOTAL LINES" HorizontalAlignment="Center" Foreground="Gray"/>
+								<TextBlock x:Name="txtTotalLines" Text="0" FontSize="35" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#2C5AA0"/>
+							</StackPanel>
+						</Border>
+						<Border Background="White" Margin="10" CornerRadius="8">
+							<StackPanel VerticalAlignment="Center">
+								<TextBlock Text="RUNNING" HorizontalAlignment="Center" Foreground="Gray"/>
+								<TextBlock x:Name="txtRunningLines" Text="0" FontSize="35" FontWeight="Bold" HorizontalAlignment="Center" Foreground="Green"/>
+							</StackPanel>
+						</Border>
+						<Border Background="White" Margin="10" CornerRadius="8">
+							<StackPanel VerticalAlignment="Center">
+								<TextBlock Text="AVAILABLE" HorizontalAlignment="Center" Foreground="Gray"/>
+								<TextBlock x:Name="txtAvailableLines" Text="0" FontSize="35" FontWeight="Bold" HorizontalAlignment="Center" Foreground="Orange"/>
+							</StackPanel>
+						</Border>
+					</UniformGrid>
+				</Border>
+			</TabItem>
+
+			<TabItem Header="MONITORING">
+				<Border Padding="20">
+					<Grid>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto"/>
+							<RowDefinition Height="*"/>
+						</Grid.RowDefinitions>
+						<Button Content="+ ADD LINE" Click="btnAddLine_Click" HorizontalAlignment="Right" Margin="0,0,0,15" Background="Green" Foreground="White" Padding="10,5"/>
+						<ScrollViewer Grid.Row="1">
+							<ItemsControl x:Name="LinesControl">
+								<ItemsControl.ItemsPanel>
+									<ItemsPanelTemplate>
+										<WrapPanel/>
+									</ItemsPanelTemplate>
+								</ItemsControl.ItemsPanel>
+								<ItemsControl.ItemTemplate>
+									<DataTemplate>
+										<Border Width="250" Height="180" Background="White" Margin="10" CornerRadius="10" MouseDown="LineCard_MouseDown" Cursor="Hand" BorderBrush="#DDD" BorderThickness="1">
+											<Border Padding="15">
+												<StackPanel>
+													<TextBlock Text="{Binding LineName}" FontWeight="Bold" FontSize="16"/>
+													<TextBlock Text="{Binding StatusText}" Foreground="Gray"/>
+													<ComboBox ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=AvailableProducts}" SelectedItem="{Binding CurrentProduct}" Margin="0,10,0,0"/>
+												</StackPanel>
+											</Border>
+										</Border>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
+						</ScrollViewer>
+					</Grid>
+				</Border>
+			</TabItem>
+
+			<TabItem Header="PRODUCTION">
+				<Border Padding="20">
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition Width="350"/>
+						</Grid.ColumnDefinitions>
+						<Border Background="White" CornerRadius="10" Padding="20">
+							<StackPanel>
+								<TextBlock Text="INVENTORY" FontWeight="Bold" Margin="0,0,0,20"/>
+								<ItemsControl x:Name="InventoryList">
+									<ItemsControl.ItemTemplate>
+										<DataTemplate>
+											<Grid Margin="0,10">
+												<Grid.ColumnDefinitions>
+													<ColumnDefinition Width="*"/>
+													<ColumnDefinition Width="150"/>
+												</Grid.ColumnDefinitions>
+												<TextBlock Text="{Binding MaterialName}" VerticalAlignment="Center"/>
+												<ProgressBar Grid.Column="1" Value="{Binding QuantityPercentage}" Height="15" Foreground="#2C5AA0"/>
+											</Grid>
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
+							</StackPanel>
+						</Border>
+						<Border Grid.Column="1" Margin="20,0,0,0" Background="White" CornerRadius="10" Padding="20">
+							<StackPanel>
+								<Button Content="APPROVE REQUESTS" Click="btnApprove_Click" Height="50" Background="Orange" Foreground="White" FontWeight="Bold"/>
+								<ListBox x:Name="lstRequests" Height="400" DisplayMemberPath="Details" Margin="0,15,0,0"/>
+							</StackPanel>
+						</Border>
+					</Grid>
+				</Border>
+			</TabItem>
+		</TabControl>
+	</Grid>
+</Window>
