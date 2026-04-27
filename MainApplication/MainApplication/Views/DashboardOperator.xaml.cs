@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using MainApplication.Models;
 
 namespace MainApplication.Views
 {
@@ -19,12 +20,38 @@ namespace MainApplication.Views
 
         private void LoadData()
         {
+            // 1. Păstrăm materialele de test pentru inventar (până le vom muta și pe ele în baza de date)
+            Materials.Clear();
             Materials.Add(new MaterialItem { MaterialName = "PVC Granules", QuantityPercentage = 45 });
             Materials.Add(new MaterialItem { MaterialName = "Blue Ink", QuantityPercentage = 15 });
 
-            Lines.Add(new ProductionLine { LineName = "LINE 01", IsOccupied = true, StatusText = "RUNNING", CurrentProduct = "Bottle 0.5L" });
-            Lines.Add(new ProductionLine { LineName = "LINE 02", IsOccupied = false, StatusText = "READY" });
+            // 2. Citim liniile din baza de date
+            try
+            {
+                using (var context = new MESDbContext())
+                {
+                    var workstations = context.Workstations.ToList();
 
+                    Lines.Clear();
+
+                    foreach (var station in workstations)
+                    {
+                        Lines.Add(new ProductionLine
+                        {
+                            LineName = station.WorkstationName, // Numele liniei din baza de date
+                            IsOccupied = station.IsOnline,
+                            StatusText = station.IsOnline ? "ONLINE" : "OFFLINE",
+                            CurrentProduct = "În așteptare..." // Sau "Fără Produs"
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Eroare la încărcarea liniilor din baza de date: " + ex.Message, "Eroare", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
+            // 3. Legăm listele de pe interfață la datele noastre
             InventoryList.ItemsSource = Materials;
             LinesControl.ItemsSource = Lines;
         }

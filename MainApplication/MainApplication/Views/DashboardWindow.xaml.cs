@@ -19,6 +19,9 @@ namespace MainApplication.Views
             InitializeComponent();
             this.DataContext = this;
             LoadDataFromDatabase();
+            // 2. IMPORTANT: Spunem interfeței să se uite la colecția "Lines"
+            LinesControl.ItemsSource = Lines;
+            InventoryList.ItemsSource = Materials; // Nu uita de inventar
             Lines.CollectionChanged += (s, e) => UpdateStats();
             lstRequests.ItemsSource = SessionManager.PendingRequests;
         }
