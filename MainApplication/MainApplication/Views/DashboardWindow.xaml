@@ -63,7 +63,10 @@
 												<StackPanel>
 													<TextBlock Text="{Binding LineName}" FontWeight="Bold" FontSize="16"/>
 													<TextBlock Text="{Binding StatusText}" Foreground="Gray"/>
-													<ComboBox ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=AvailableProducts}" SelectedItem="{Binding CurrentProduct}" Margin="0,10,0,0"/>
+													<StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+														<TextBlock Text="Produs: " Foreground="Gray"/>
+														<TextBlock Text="{Binding CurrentProduct}" FontWeight="SemiBold"/>
+													</StackPanel>
 												</StackPanel>
 											</Border>
 										</Border>
