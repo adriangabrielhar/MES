@@ -1,5 +1,5 @@
-login - apasa enter / adauga register cu apel la baza de date
-praola- este o functie de hash si roluri
+login - apasa enter / adauga register cu apel la baza de date    -  REZOLVAT
+parola- este o functie de hash si roluri    - REZOLVAT Hash parola - rolurile erau implementate deja, trebuie la register sa se faca
 pus limita de linii
 *io dau comanda de operator
 *admin primeste notificare de material cand operator face request si nu este material
@@ -11,7 +11,8 @@ adminu are bypass la cerere
 paul
 ca si operator trb sa selectezi linia si ce se asambleaza e linia respectiva si sa se vada toate liniile si daca sunt disponibile sau nu
 sa se selecteze linia si sa se poata vizualiza starea liniei si durata de productie
-sa nu se poata modifica o linie in productie
+sa nu se poata modifica o linie in productie  - REZOLVAT partial (facuta mai frumoasa interfata)
+adauga interfata la butonu add line pt admini
 
 
 
