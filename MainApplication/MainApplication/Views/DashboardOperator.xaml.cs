@@ -57,20 +57,52 @@ namespace MainApplication.Views
         }
 
         // METODELE CARE LIPSEAU ÎN EROAREA TA:
-        private void btnRequestStock_Click(object sender, RoutedEventArgs e)
+        private async void btnRequestStock_Click(object sender, RoutedEventArgs e)
         {
-            var selected = Materials.Where(m => m.IsSelected).Select(m => m.MaterialName).ToList();
-            if (selected.Any())
+            // Căutăm materialele pe care le-a bifat operatorul
+            var selectedMaterials = Materials.Where(m => m.IsSelected).ToList();
+
+            if (!selectedMaterials.Any())
             {
-                SessionManager.PendingRequests.Add(new StockRequest
-                {
-                    Details = $"Order from Operator: {string.Join(", ", selected)}"
-                });
-                MessageBox.Show("Request sent to Admin.");
+                MessageBox.Show("Te rog să selectezi cel puțin un material!", "Avertisment", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
             }
-            else
+
+            try
             {
-                MessageBox.Show("Select at least one material.");
+                using (var context = new MESDbContext())
+                {
+                    foreach (var material in selectedMaterials)
+                    {
+                        // Găsim ID-ul materialului din baza de date pe baza numelui
+                        // (Presupunând că ai deja materialele "PVC Granules" etc. în tabela InventoryItems)
+                        var dbItem = context.InventoryItems.FirstOrDefault(i => i.ItemName == material.MaterialName);
+
+                        if (dbItem != null)
+                        {
+                            // Creăm cererea de materiale în tabelul de legătură
+                            var newRequest = new OrderMaterial
+                            {
+                                OrderId = 1, // ID-ul comenzii la care lucrează operatorul acum
+                                ItemId = dbItem.Id,
+                                QuantityNeeded = 50 // O cantitate standard sau preluată din interfață
+                            };
+
+                            context.OrderMaterials.Add(newRequest);
+                        }
+                    }
+
+                    // Salvăm toate cererile în baza de date
+                    await context.SaveChangesAsync();
+                    MessageBox.Show("Cererea de materiale a fost trimisă cu succes către Admin!", "Succes", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    // Debifăm căsuțele după trimitere
+                    foreach (var mat in selectedMaterials) mat.IsSelected = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Eroare la trimiterea cererii: {ex.Message}", "Eroare Bază de Date", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
