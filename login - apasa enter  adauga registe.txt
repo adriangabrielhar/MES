@@ -1,0 +1,21 @@
+login - apasa enter / adauga register cu apel la baza de date
+praola- este o functie de hash si roluri
+pus limita de linii
+*io dau comanda de operator
+*admin primeste notificare de material cand operator face request si nu este material
+adminu are bypass la cerere
+*in admin nu apar toate liniile
+*inventaru nu apare
+*orice dau approve nu se umple ce trb - nici in operator
+
+paul
+ca si operator trb sa selectezi linia si ce se asambleaza e linia respectiva si sa se vada toate liniile si daca sunt disponibile sau nu
+sa se selecteze linia si sa se poata vizualiza starea liniei si durata de productie
+sa nu se poata modifica o linie in productie
+
+
+
+
+
+
+* -baza de date

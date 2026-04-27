@@ -20,7 +20,7 @@ namespace MainApplication
         {
             if (!optionsBuilder.IsConfigured)
             {
-                string connectionString = "Server=tcp:mes-server-nootnoot.database.windows.net,1433;Initial Catalog=MES_Database;Persist Security Info=False;User ID=mesadmin;Password=ProiectMESAN3;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+                string connectionString = "Server=tcp:mes-server-nootnoot.database.windows.net,1433;Initial Catalog=MES_Database;Persist Security Info=False;User ID=mesadmin;Password=ProiectMESAN3;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=90;";
 
                 optionsBuilder.UseSqlServer(connectionString, sqlServerOptionsAction: sqlOptions =>
                 {
