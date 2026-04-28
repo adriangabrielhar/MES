@@ -91,7 +91,7 @@ namespace MainApplication.Views
                 {
                     Lines.Add(new ProductionLine
                     {
-                        // AM MODIFICAT AICI: Folosim WorkstationName
+                        // AM MODIFICAT AICI: Folosim WorkstationName.
                         LineName = station.WorkstationName,
                         IsOccupied = station.IsOnline,
                         StatusText = station.IsOnline ? "ONLINE" : "OFFLINE",

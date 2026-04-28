@@ -1,19 +1,22 @@
 login - apasa enter / adauga register cu apel la baza de date    -  REZOLVAT
-parola- este o functie de hash si roluri    - REZOLVAT Hash parola - rolurile erau implementate deja, trebuie la register sa se faca
-pus limita de linii
-*io dau comanda de operator
-*admin primeste notificare de material cand operator face request si nu este material
-adminu are bypass la cerere
-*in admin nu apar toate liniile
-*inventaru nu apare
-*orice dau approve nu se umple ce trb - nici in operator
+parola- este o functie de hash si roluri    - REZOLVAT Hash parola - rolurile erau implementate deja, trebuie la register sa se faca (paul 6)
+pus limita de linii - REZOLVAT
+*io dau comanda de operator, admin primeste notificare de material cand operator face request si nu este material - (nu se poate face ca nu am date in baza / dan 1)
+adminu are bypass la cerere - nu se poate inca (paul 5)
+*in admin nu apar toate liniile - REZOLVAT
+*inventaru nu apare (nici nu o sa apara pana nu populeaza dan baza de date / dan 1)
+*orice dau approve nu se umple ce trb - nici in operator (nu pot lucra pana cand nu am date in baza / dan 1)
 
 paul
-ca si operator trb sa selectezi linia si ce se asambleaza e linia respectiva si sa se vada toate liniile si daca sunt disponibile sau nu
-sa se selecteze linia si sa se poata vizualiza starea liniei si durata de productie
-sa nu se poata modifica o linie in productie  - REZOLVAT partial (facuta mai frumoasa interfata)
-adauga interfata la butonu add line pt admini
+1. ca si operator trb sa selectezi linia si ce se asambleaza e linia respectiva si sa se vada toate liniile si daca sunt disponibile sau nu
+2. sa se selecteze linia si sa se poata vizualiza starea liniei si durata de productie
+3. sa nu se poata modifica o linie in productie  - REZOLVAT partial (facuta mai frumoasa interfata)
+4. adauga interfata la butonu add line pt admini
+5. nu exista interfata de request pentru admin
+6. interfata de login accesibila doar din admin
 
+dan
+1. *populeaza baza de date
 
 
 
