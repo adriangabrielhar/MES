@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using MainApplication.Models;
+using System.Windows.Threading;
 
 namespace MainApplication.Views
 {
@@ -18,12 +19,28 @@ namespace MainApplication.Views
         {
             InitializeComponent();
             this.DataContext = this;
+
+            // Încărcarea inițială când se deschide fereastra
             LoadDataFromDatabase();
             LoadRequestsFromDatabase();
-            // 2. IMPORTANT: Spunem interfeței să se uite la colecția "Lines"
-            LinesControl.ItemsSource = Lines;
-            InventoryList.ItemsSource = Materials; // Nu uita de inventar
+
             Lines.CollectionChanged += (s, e) => UpdateStats();
+
+            // ==========================================
+            // AUTO-REFRESH: Se actualizează la fiecare 5 secunde
+            // ==========================================
+            DispatcherTimer autoRefreshTimer = new DispatcherTimer();
+            autoRefreshTimer.Interval = TimeSpan.FromSeconds(5); // Poți schimba la 3 sau 10 secunde, cum preferi
+            autoRefreshTimer.Tick += (sender, args) =>
+            {
+                // Reîmprospătăm lista de cereri din baza de date
+                LoadRequestsFromDatabase();
+
+                // Dacă vrei, poți decomenta rândul de mai jos pentru ca și 
+                // statusul liniilor (Online/Offline) să se actualizeze automat!
+                // LoadDataFromDatabase(); 
+            };
+            autoRefreshTimer.Start();
         }
 
         private void LoadData()
