@@ -20,51 +20,67 @@ namespace MainApplication.Views
 
         private void LoadData()
         {
-            // 1. Păstrăm materialele de test pentru inventar (până le vom muta și pe ele în baza de date)
+            // Golim listele înainte de a le umple cu date noi
             Materials.Clear();
-            Materials.Add(new MaterialItem { MaterialName = "PVC Granules", QuantityPercentage = 45 });
-            Materials.Add(new MaterialItem { MaterialName = "Blue Ink", QuantityPercentage = 15 });
+            Lines.Clear();
 
-            // 2. Citim liniile din baza de date
             try
             {
                 using (var context = new MESDbContext())
                 {
-                    var workstations = context.Workstations.ToList();
+                    // ==========================================
+                    // 1. ÎNCĂRCAREA STOCULUI DIN BAZA DE DATE
+                    // ==========================================
+                    var inventoryItems = context.InventoryItems.ToList();
 
-                    Lines.Clear();
+                    foreach (var item in inventoryItems)
+                    {
+                        Materials.Add(new MaterialItem
+                        {
+                            MaterialName = item.ItemName,
+
+                            // ProgressBar-ul din interfață așteaptă o valoare între 0 și 100.
+                            // Dacă AvailableQuantity este direct procentul, îl lăsăm așa.
+                            // Dacă AvailableQuantity reprezintă bucăți/kg (ex: 500), ar trebui să 
+                            // calculezi procentul raportat la un maxim (ex: (item.AvailableQuantity * 100) / Max)
+                            QuantityPercentage = item.AvailableQuantity
+                        });
+                    }
+
+                    // ==========================================
+                    // 2. ÎNCĂRCAREA LINIILOR DIN BAZA DE DATE
+                    // ==========================================
+                    var workstations = context.Workstations.ToList();
 
                     foreach (var station in workstations)
                     {
                         Lines.Add(new ProductionLine
                         {
-                            LineName = station.WorkstationName, // Numele liniei din baza de date
+                            LineName = station.WorkstationName,
                             IsOccupied = station.IsOnline,
                             StatusText = station.IsOnline ? "ONLINE" : "OFFLINE",
-                            CurrentProduct = "În așteptare..." // Sau "Fără Produs"
+                            CurrentProduct = "În așteptare..."
                         });
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Eroare la încărcarea liniilor din baza de date: " + ex.Message, "Eroare", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Eroare la conectarea cu Azure: " + ex.Message, "Eroare BD", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
-            // 3. Legăm listele de pe interfață la datele noastre
+            // 3. Legăm listele de pe interfață (chiar dacă sunt legate și în XAML, ne asigurăm aici)
             InventoryList.ItemsSource = Materials;
             LinesControl.ItemsSource = Lines;
         }
 
-        // METODELE CARE LIPSEAU ÎN EROAREA TA:
         private async void btnRequestStock_Click(object sender, RoutedEventArgs e)
         {
-            // Căutăm materialele pe care le-a bifat operatorul
             var selectedMaterials = Materials.Where(m => m.IsSelected).ToList();
 
             if (!selectedMaterials.Any())
             {
-                MessageBox.Show("Te rog să selectezi cel puțin un material!", "Avertisment", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Vă rugăm să selectați cel puțin un material.", "Avertisment", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -72,37 +88,55 @@ namespace MainApplication.Views
             {
                 using (var context = new MESDbContext())
                 {
+                    // 1. Creăm o comandă NOUĂ în baza de date pentru a obține un ID proaspăt
+                    var newOrder = new ProductionOrder
+                    {
+                        ProductName = "Cerere Materiale Operator",
+                        RequiredQuantity = 0,
+                        LaunchDate = DateTime.Now,
+                        StatusName = "New"
+                    };
+
+                    context.ProductionOrders.Add(newOrder);
+                    context.SaveChanges(); // După această linie, baza de date îi asignează automat următorul ID (ex: 2, 3, 4...)
+
+                    // 2. Extragem ID-ul proaspăt generat
+                    int currentOrderId = newOrder.Id;
+
                     foreach (var material in selectedMaterials)
                     {
-                        // Găsim ID-ul materialului din baza de date pe baza numelui
-                        // (Presupunând că ai deja materialele "PVC Granules" etc. în tabela InventoryItems)
+                        // Găsim ItemId-ul materialului bifat
                         var dbItem = context.InventoryItems.FirstOrDefault(i => i.ItemName == material.MaterialName);
 
                         if (dbItem != null)
                         {
-                            // Creăm cererea de materiale în tabelul de legătură
+                            // 3. Adăugăm materialele la NOUL OrderId
                             var newRequest = new OrderMaterial
                             {
-                                OrderId = 1, // ID-ul comenzii la care lucrează operatorul acum
+                                OrderId = currentOrderId, // Acum va fi mereu unul nou la fiecare apăsare de buton!
                                 ItemId = dbItem.Id,
-                                QuantityNeeded = 50 // O cantitate standard sau preluată din interfață
+                                QuantityNeeded = 0
                             };
 
                             context.OrderMaterials.Add(newRequest);
                         }
                     }
 
-                    // Salvăm toate cererile în baza de date
+                    // 4. Salvăm detaliile cererii
                     await context.SaveChangesAsync();
-                    MessageBox.Show("Cererea de materiale a fost trimisă cu succes către Admin!", "Succes", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                    // Debifăm căsuțele după trimitere
-                    foreach (var mat in selectedMaterials) mat.IsSelected = false;
+                    MessageBox.Show($"Cererea a fost salvată cu succes sub ID-ul: {currentOrderId}!", "Succes", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    // Debifăm căsuțele
+                    foreach (var mat in selectedMaterials)
+                    {
+                        mat.IsSelected = false;
+                    }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Eroare la trimiterea cererii: {ex.Message}", "Eroare Bază de Date", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Eroare la salvarea în baza de date: {ex.InnerException?.Message ?? ex.Message}", "Eroare", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -114,9 +148,21 @@ namespace MainApplication.Views
 
         private void LineCard_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            // Verificăm pe care card de linie a dat click operatorul
             if ((sender as FrameworkElement)?.DataContext is ProductionLine line)
             {
-                // new LineFaceplate(line) { Owner = this }.ShowDialog();
+                // Creăm o nouă fereastră Faceplate și îi pasăm linia selectată
+                var faceplate = new LineFaceplate(line)
+                {
+                    Owner = this // Setăm ca fereastra curentă (Operatorul) să fie "proprietarul" ei
+                };
+
+                // Deschidem fereastra ca un Dialog (adică operatorul nu poate da click altundeva până nu o închide)
+                faceplate.ShowDialog();
+
+                // Opțional: Reîmprospătăm listele după ce se închide fereastra, 
+                // în cazul în care s-a schimbat statusul din Faceplate
+                LinesControl.Items.Refresh();
             }
         }
     }

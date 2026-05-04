@@ -19,11 +19,11 @@ namespace MainApplication.Views
             InitializeComponent();
             this.DataContext = this;
             LoadDataFromDatabase();
+            LoadRequestsFromDatabase();
             // 2. IMPORTANT: Spunem interfeței să se uite la colecția "Lines"
             LinesControl.ItemsSource = Lines;
             InventoryList.ItemsSource = Materials; // Nu uita de inventar
             Lines.CollectionChanged += (s, e) => UpdateStats();
-            lstRequests.ItemsSource = SessionManager.PendingRequests;
         }
 
         private void LoadData()
@@ -100,6 +100,48 @@ namespace MainApplication.Views
                 }
 
                 UpdateStats();
+            }
+        }
+
+        private void LoadRequestsFromDatabase()
+        {
+            try
+            {
+                using (var context = new MESDbContext())
+                {
+                    // 1. Aducem toate cererile și toate materialele din baza de date
+                    var orderMaterials = context.OrderMaterials.ToList();
+                    var inventoryItems = context.InventoryItems.ToList();
+
+                    // 2. Grupăm rândurile din OrderMaterials în funcție de OrderId
+                    var groupedRequests = orderMaterials.GroupBy(om => om.OrderId);
+
+                    var displayList = new List<StockRequest>();
+
+                    // 3. Parcurgem fiecare grup (fiecare comandă în parte)
+                    foreach (var group in groupedRequests)
+                    {
+                        int orderId = group.Key;
+
+                        // 4. Transformăm ItemId-urile din acest grup în numele lor reale din InventoryItems
+                        var itemNames = group.Select(om =>
+                            inventoryItems.FirstOrDefault(i => i.Id == om.ItemId)?.ItemName ?? "Material Necunoscut"
+                        ).ToList();
+
+                        // 5. Construim textul pe care îl va vedea Adminul
+                        string detailsText = $"Comanda #{orderId} - Materiale solicitate: {string.Join(", ", itemNames)}";
+
+                        // Adăugăm în lista pentru interfață
+                        displayList.Add(new StockRequest { Details = detailsText });
+                    }
+
+                    // 6. Afișăm pe ecran!
+                    lstRequests.ItemsSource = displayList;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Eroare la încărcarea cererilor: {ex.Message}", "Eroare Bază de Date", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
