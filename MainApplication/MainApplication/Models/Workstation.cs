@@ -10,5 +10,6 @@ namespace MainApplication.Models
         public string WorkstationName { get; set; }
         public bool IsOnline { get; set; }
         public int? CurrentOrderId { get; set; }
+        public string? Expertiza { get; set; }
     }
 }
