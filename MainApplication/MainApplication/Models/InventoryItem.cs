@@ -10,6 +10,7 @@ namespace MainApplication.Models
         public string ItemName { get; set; }
         public int AvailableQuantity { get; set; }
         public int AlertThreshold { get; set; }
-
+        public string? Categorie { get; set; }
+        public int? MaxCapacity { get; set; }
     }
 }
