@@ -1,5 +1,9 @@
 paul
-scoate linie de la inventar pe pagina de operator
+1.scoate linie de la inventar pe pagina de operator  - REZOLVAT
+2.refacut pagina pentru linia de fabricatie - REZOLVAT
+3.reintrodus pagina de accept request admin - Rezolvat
+4.facut pagina de gestionare operator de la admin doar - REZOLVAT
+
 
 dan
 adauga coloana cu expertiza la inventoryitems

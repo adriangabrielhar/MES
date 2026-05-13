@@ -70,7 +70,7 @@ namespace MainApplication.Views
             }
 
             // 3. Legăm listele de pe interfață (chiar dacă sunt legate și în XAML, ne asigurăm aici)
-            InventoryList.ItemsSource = Materials;
+            //InventoryList.ItemsSource = Materials;
             LinesControl.ItemsSource = Lines;
         }
 

@@ -16,32 +16,9 @@
 		</Border>
 
 		<Grid Grid.Row="1" Margin="20">
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="350"/>
-				<ColumnDefinition Width="*"/>
-			</Grid.ColumnDefinitions>
+			
 
-			<Border Background="White" CornerRadius="10" Padding="15">
-				<Grid>
-					<Grid.RowDefinitions>
-						<RowDefinition Height="Auto"/>
-						<RowDefinition Height="*"/>
-						<RowDefinition Height="Auto"/>
-					</Grid.RowDefinitions>
-					<TextBlock Text="LOCAL STOCK" FontWeight="Bold" Margin="0,0,0,10"/>
-					<ListBox x:Name="InventoryList" Grid.Row="1" BorderThickness="0">
-						<ListBox.ItemTemplate>
-							<DataTemplate>
-								<StackPanel Margin="0,10">
-									<CheckBox Content="{Binding MaterialName}" IsChecked="{Binding IsSelected}" FontWeight="Bold"/>
-									<ProgressBar Value="{Binding QuantityPercentage}" Height="8" Margin="0,5" Foreground="#2C5AA0"/>
-								</StackPanel>
-							</DataTemplate>
-						</ListBox.ItemTemplate>
-					</ListBox>
-					<Button Grid.Row="2" Content="SEND REFILL REQUEST" Click="btnRequestStock_Click" Height="45" Background="#2C5AA0" Foreground="White" FontWeight="Bold" Margin="0,10,0,0"/>
-				</Grid>
-			</Border>
+			
 
 			<ScrollViewer Grid.Column="1" Margin="20,0,0,0">
 				<ItemsControl x:Name="LinesControl">
