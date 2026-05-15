@@ -65,7 +65,8 @@ namespace MainApplication.Views
                         LineName = station.WorkstationName,
                         IsOccupied = station.IsOnline,
                         StatusText = station.IsOnline ? "ONLINE" : "OFFLINE",
-                        CurrentProduct = "None"
+                        CurrentProduct = "None",
+                        LineType = station.LineType ?? "Final Product"
                     });
                 }
                 LinesControl.ItemsSource = Lines;
@@ -101,7 +102,31 @@ namespace MainApplication.Views
             this.Close();
         }
 
-        private void btnAddLine_Click(object sender, RoutedEventArgs e) { /* Logica ta de Add Line ramane neschimbata */ }
-        private void LineCard_MouseDown(object sender, MouseButtonEventArgs e) { /* Deschidere Faceplate */ }
+        private void btnAddLine_Click(object sender, RoutedEventArgs e)
+        {
+            AddLineWindow addLineWin = new AddLineWindow();
+            addLineWin.Owner = this;
+            if (addLineWin.ShowDialog() == true)
+            {
+                LoadDataFromDatabase();
+            }
+        }
+
+        private void LineCard_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            // Verificăm pe care linie a dat click Admin-ul
+            if ((sender as FrameworkElement)?.DataContext is ProductionLine line)
+            {
+                var faceplate = new LineFaceplate(line)
+                {
+                    Owner = this
+                };
+
+                faceplate.ShowDialog();
+
+                // Reîmprospătăm interfața după ce se închide fațada, pentru a vedea noile statusuri
+                LoadDataFromDatabase();
+            }
+        }
     }
 }

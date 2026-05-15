@@ -18,7 +18,7 @@
 
             <Border Grid.Column="0" Background="#1A3D73" CornerRadius="15,0,0,15">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <TextBlock Text="XACT-FIL" Foreground="White" FontSize="42" FontWeight="Black" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Noot Noot Manufacturing" Foreground="White" FontSize="42" FontWeight="Black" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center"/>
                     <TextBlock Text="MES ENTERPRISE" Foreground="#A0C4FF" FontSize="14" HorizontalAlignment="Center" Margin="0,5,0,0"/>
                     <Rectangle Width="50" Height="2" Fill="Yellow" Margin="0,20,0,0"/>
                 </StackPanel>

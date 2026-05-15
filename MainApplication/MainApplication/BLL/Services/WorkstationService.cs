@@ -1,44 +1,41 @@
 ﻿using System.Linq;
 using MainApplication.Models;
-using MainApplication.DAL;
 
 namespace MainApplication.BLL.Services
 {
     class WorkstationService
     {
-        private readonly IRepository<Workstation> _workstationRepo;
+        // Folosim contextul direct în loc de IRepository
+        private readonly MESDbContext _context;
 
-        public WorkstationService(IRepository<Workstation> workstationRepo)
+        public WorkstationService(MESDbContext context)
         {
-            _workstationRepo = workstationRepo;
+            _context = context;
         }
 
-        
         public bool AssignOrderToStation(int orderId, int stationId)
         {
-            var station = _workstationRepo.GetById(stationId);
+            var station = _context.Workstations.Find(stationId);
 
-           
             if (station != null && station.IsOnline && station.CurrentOrderId == null)
             {
                 station.CurrentOrderId = orderId;
-                _workstationRepo.Update(station);
+                _context.Workstations.Update(station);
+                _context.SaveChanges(); // Salvăm direct în baza de date
                 return true;
             }
             return false;
         }
 
-       
         public void MarkStationOffline(int stationId, string reason)
         {
-            var station = _workstationRepo.GetById(stationId);
+            var station = _context.Workstations.Find(stationId);
             if (station != null)
             {
                 station.IsOnline = false;
-                station.CurrentOrderId = null; 
-                _workstationRepo.Update(station);
-
-                
+                station.CurrentOrderId = null;
+                _context.Workstations.Update(station);
+                _context.SaveChanges(); // Salvăm direct în baza de date
             }
         }
     }

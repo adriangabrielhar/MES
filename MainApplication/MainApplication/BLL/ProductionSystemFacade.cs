@@ -19,9 +19,14 @@ namespace MainApplication.BLL
         {
             _context = new MESDbContext();
             _authService = new AuthService(_context);
+
             var inventoryRepo = new InventoryRepository(_context);
             _inventoryService = new InventoryService(inventoryRepo, _context);
+
             _factory = new OrderFactory();
+
+            // Inițializăm WorkstationService dându-i direct contextul!
+            _workstationService = new WorkstationService(_context);
         }
 
         public ResponseData LaunchOrder(string orderType, string product, int quantity, int userId)

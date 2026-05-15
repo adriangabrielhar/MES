@@ -4,12 +4,12 @@ using System.Text;
 
 namespace MainApplication.Models
 {
-    class Workstation
+    public class Workstation
     {
         public int Id { get; set; }
         public string WorkstationName { get; set; }
         public bool IsOnline { get; set; }
         public int? CurrentOrderId { get; set; }
-        public string? Expertiza { get; set; }
+        public string LineType { get; set; } = "Final Product"; // "Sub-Assembly" or "Final Product"
     }
 }

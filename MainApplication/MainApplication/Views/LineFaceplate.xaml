@@ -1,131 +1,190 @@
 ﻿<Window x:Class="MainApplication.Views.LineFaceplate"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Line Faceplate - Control Manual" Height="800" Width="1100"
+        Title="Line Faceplate - Control Manual" Height="900" Width="1200"
         WindowStartupLocation="CenterOwner" Background="#F0F2F5" ResizeMode="NoResize">
-	<Grid Margin="20">
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto"/>
-			<!-- Header -->
-			<RowDefinition Height="*"/>
-			<!-- Body -->
-			<RowDefinition Height="Auto"/>
-			<!-- Footer -->
-		</Grid.RowDefinitions>
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Header -->
+            <RowDefinition Height="*"/>
+            <!-- Body -->
+            <RowDefinition Height="Auto"/>
+            <!-- Footer -->
+        </Grid.RowDefinitions>
 
-		<!-- HEADER DINAMIC -->
-		<Border Grid.Row="0" x:Name="brdHeader" Background="#1A3D73" Padding="15" Margin="0,0,0,15" CornerRadius="8">
-			<DockPanel>
-				<StackPanel>
-					<TextBlock x:Name="txtLineName" Text="LINE 01" Foreground="White" FontSize="26" FontWeight="Bold"/>
-					<TextBlock x:Name="txtProduct" Text="Product: În așteptare..." Foreground="#A0C4FF" FontSize="14"/>
-				</StackPanel>
-				<Border x:Name="brdStatusBadge" HorizontalAlignment="Right" VerticalAlignment="Center" CornerRadius="15" Padding="20,8" Background="#28A745">
-					<TextBlock x:Name="lblStatus" Text="ONLINE" Foreground="White" FontWeight="Bold" FontSize="14"/>
-				</Border>
-			</DockPanel>
-		</Border>
+        <!-- HEADER DINAMIC -->
+        <Border Grid.Row="0" x:Name="brdHeader" Background="#1A3D73" Padding="15" Margin="0,0,0,15" CornerRadius="8">
+            <DockPanel>
+                <StackPanel>
+                    <TextBlock x:Name="txtLineName" Text="LINE 01" Foreground="White" FontSize="26" FontWeight="Bold"/>
+                    <TextBlock x:Name="txtProduct" Text="Product: În așteptare..." Foreground="#A0C4FF" FontSize="14"/>
+                </StackPanel>
+                <Border x:Name="brdStatusBadge" HorizontalAlignment="Right" VerticalAlignment="Center" CornerRadius="15" Padding="20,8" Background="#28A745">
+                    <TextBlock x:Name="lblStatus" Text="ONLINE" Foreground="White" FontWeight="Bold" FontSize="14"/>
+                </Border>
+            </DockPanel>
+        </Border>
 
-		<Grid Grid.Row="1">
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="300"/>
-				<!-- C1: Gestiune Stoc -->
-				<ColumnDefinition Width="*"/>
-				<!-- C2: Configurare & Mentenanță -->
-				<ColumnDefinition Width="320"/>
-				<!-- C3: Status Producție -->
-			</Grid.ColumnDefinitions>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300"/>
+                <!-- C1: Gestiune Stoc -->
+                <ColumnDefinition Width="*"/>
+                <!-- C2: Configurare & Mentenanță -->
+                <ColumnDefinition Width="350"/>
+                <!-- C3: Status Producție -->
+            </Grid.ColumnDefinitions>
 
-			<!-- COLOANA 1: GESTIUNE STOC -->
-			<GroupBox Header="Gestiune Stoc Linie" Margin="0,0,10,0" Padding="5">
-				<ListBox x:Name="lstRestockItems" BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Stretch">
-					<ListBox.ItemTemplate>
-						<DataTemplate>
-							<Border BorderBrush="#DDD" BorderThickness="0,0,0,1" Padding="8,5">
-								<Grid>
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="*"/>
-										<ColumnDefinition Width="Auto"/>
-									</Grid.ColumnDefinitions>
-									<TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold"/>
-									<Button Grid.Column="1" Content="REQUEST" Width="75" Height="25"
+            <!-- COLOANA 1: GESTIUNE STOC -->
+            <GroupBox Header="Gestiune Stoc Linie" Margin="0,0,10,0" Padding="5">
+                <ListBox x:Name="lstRestockItems" BorderThickness="0" Background="Transparent" HorizontalContentAlignment="Stretch">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="#DDD" BorderThickness="0,0,0,1" Padding="8,5">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold"/>
+                                    <Button Grid.Column="1" Content="REQUEST" Width="75" Height="25"
                                             Background="#1A3D73" Foreground="White" FontWeight="Bold" FontSize="10"
                                             Click="btnRequestRestock_Click" Tag="{Binding Name}"/>
-								</Grid>
-							</Border>
-						</DataTemplate>
-					</ListBox.ItemTemplate>
-				</ListBox>
-			</GroupBox>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </GroupBox>
 
-			<!-- COLOANA 2: CONFIGURARE ȘI MENTENANȚĂ -->
-			<Grid Grid.Column="1" Margin="5,0">
-				<Grid.RowDefinitions>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="*"/>
-					<RowDefinition Height="Auto"/>
-				</Grid.RowDefinitions>
+            <!-- COLOANA 2: CONFIGURARE ȘI MENTENANȚĂ -->
+            <Grid Grid.Column="1" Margin="5,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-				<GroupBox Grid.Row="0" Header="Configurare Lot" Margin="0,0,0,10" Padding="10">
-					<StackPanel>
-						<TextBlock Text="Selectați Produsul:" Margin="0,0,0,5" Foreground="#555"/>
-						<ComboBox x:Name="cmbProductSelection" Height="35" VerticalContentAlignment="Center"
+                <!-- PRODUCT SELECTION -->
+                <GroupBox Grid.Row="0" Header="Configurare Lot" Margin="0,0,0,10" Padding="10">
+                    <StackPanel>
+                        <TextBlock Text="Selectați Produsul:" Margin="0,0,0,5" Foreground="#555"/>
+                        <ComboBox x:Name="cmbProductSelection" Height="35" VerticalContentAlignment="Center"
                                   SelectionChanged="cmbProductSelection_SelectionChanged"/>
-					</StackPanel>
-				</GroupBox>
+                    </StackPanel>
+                </GroupBox>
 
-				<GroupBox Grid.Row="1" Header="Verificare Materiale (BOM)" Padding="10">
-					<ItemsControl x:Name="icBOMStatus">
-						<ItemsControl.ItemTemplate>
-							<DataTemplate>
-								<Grid Margin="0,8">
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="*"/>
-										<ColumnDefinition Width="Auto"/>
-									</Grid.ColumnDefinitions>
-									<TextBlock Text="{Binding MaterialName}" VerticalAlignment="Center" FontSize="13" FontWeight="Medium"/>
-									<Rectangle Grid.Column="1" Width="100" Height="18" RadiusX="9" RadiusY="9" Fill="{Binding StatusColor}"/>
-								</Grid>
-							</DataTemplate>
-						</ItemsControl.ItemTemplate>
-					</ItemsControl>
-				</GroupBox>
+                <!-- PRODUCT CONFIGURATOR -->
+                <GroupBox x:Name="grpConfigurator" Grid.Row="1" Header="⚙️ Configurare Produs" Margin="0,0,0,10" Padding="10" Visibility="Collapsed">
+                    <StackPanel>
+                        <!-- STORAGE CAPACITY SELECTION -->
+                        <StackPanel x:Name="pnlStorageConfig" Visibility="Collapsed" Margin="0,0,0,15">
+                            <TextBlock Text="Capacitate Stocare:" Foreground="#555" FontWeight="Bold" Margin="0,0,0,8"/>
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton x:Name="rad128GB" Content="128 GB" Margin="0,0,20,0" FontSize="12" Foreground="#333" Checked="StorageOption_Changed"/>
+                                <RadioButton x:Name="rad256GB" Content="256 GB" Margin="0,0,20,0" FontSize="12" Foreground="#333" Checked="StorageOption_Changed"/>
+                                <RadioButton x:Name="rad512GB" Content="512 GB" Margin="0,0,20,0" FontSize="12" Foreground="#333" Checked="StorageOption_Changed"/>
+                                <RadioButton x:Name="rad1TB" Content="1 TB" Margin="0,0,20,0" FontSize="12" Foreground="#333" Checked="StorageOption_Changed"/>
+                                <RadioButton x:Name="rad2TB" Content="2 TB" FontSize="12" Foreground="#333" Checked="StorageOption_Changed" Visibility="Collapsed"/>
+                            </StackPanel>
+                        </StackPanel>
 
-				<GroupBox Grid.Row="2" Header="Mentenanță" Margin="0,10,0,0" Padding="10">
-					<DockPanel>
-						<StackPanel>
-							<TextBlock Text="Ultima Revizie:" FontSize="11" Foreground="Gray"/>
-							<TextBlock x:Name="txtLastService" Text="2026-02-10" FontWeight="Bold" FontSize="14" Foreground="#1A3D73"/>
-						</StackPanel>
-						<Button Content="SOLICITĂ SERVICE" HorizontalAlignment="Right" VerticalAlignment="Center"
+                        <!-- RAM SELECTION (LAPTOPS) -->
+                        <StackPanel x:Name="pnlRAMConfig" Visibility="Collapsed" Margin="0,0,0,15">
+                            <TextBlock Text="Memorie RAM:" Foreground="#555" FontWeight="Bold" Margin="0,0,0,8"/>
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton x:Name="rad4GB" Content="4 GB" Margin="0,0,20,0" FontSize="12" Foreground="#333" Checked="RAMOption_Changed" Visibility="Collapsed"/>
+                                <RadioButton x:Name="rad8GB" Content="8 GB" Margin="0,0,20,0" FontSize="12" Foreground="#333" Checked="RAMOption_Changed" Visibility="Collapsed"/>
+                                <RadioButton x:Name="rad12GB" Content="12 GB" Margin="0,0,20,0" FontSize="12" Foreground="#333" Checked="RAMOption_Changed" Visibility="Collapsed"/>
+                                <RadioButton x:Name="rad16GB" Content="16 GB" Margin="0,0,20,0" FontSize="12" Foreground="#333" Checked="RAMOption_Changed" Visibility="Collapsed"/>
+                                <RadioButton x:Name="rad32GB" Content="32 GB" FontSize="12" Foreground="#333" Checked="RAMOption_Changed" Visibility="Collapsed"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- DISPLAY SELECTION (TABLETS/LAPTOPS) -->
+                        <StackPanel x:Name="pnlDisplayConfig" Visibility="Collapsed" Margin="0,0,0,15">
+                            <TextBlock Text="Dimensiune Display:" Foreground="#555" FontWeight="Bold" Margin="0,0,0,8"/>
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton x:Name="radDisplay11" Content="11 in" Margin="0,0,20,0" FontSize="12" Foreground="#333" Checked="DisplayOption_Changed" Visibility="Collapsed"/>
+                                <RadioButton x:Name="radDisplay13" Content="13 in" Margin="0,0,20,0" FontSize="12" Foreground="#333" Checked="DisplayOption_Changed" Visibility="Collapsed"/>
+                                <RadioButton x:Name="radDisplay14" Content="14 in" Margin="0,0,20,0" FontSize="12" Foreground="#333" Checked="DisplayOption_Changed" Visibility="Collapsed"/>
+                                <RadioButton x:Name="radDisplay16" Content="16 in" FontSize="12" Foreground="#333" Checked="DisplayOption_Changed" Visibility="Collapsed"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- SUMMARY -->
+                        <Border Background="#E8F4F8" Padding="10" CornerRadius="5" BorderBrush="#B0D4E0" BorderThickness="1">
+                            <TextBlock x:Name="txtConfigSummary" Text="Configurare: Default" Foreground="#1A3D73" FontSize="11" TextWrapping="Wrap" FontWeight="SemiBold"/>
+                        </Border>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- BOM STATUS -->
+                <GroupBox Grid.Row="2" Header="Verificare Materiale (BOM)" Padding="10">
+                    <ScrollViewer MaxHeight="160" VerticalScrollBarVisibility="Auto" Margin="0,5,0,0" Padding="0,0,10,0">
+                        <ItemsControl x:Name="icBOMStatus">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Text="{Binding MaterialName}" VerticalAlignment="Center" FontSize="12" FontWeight="Medium" TextWrapping="Wrap" Margin="0,0,10,0" Foreground="{Binding TextColor}"/>
+
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="⚠️" Foreground="#DC3545" FontSize="14" Margin="0,0,5,0" Visibility="{Binding WarningVisibility}" ToolTip="Stoc sub nivelul de alertă!"/>
+
+                                            <TextBlock Text="{Binding AvailableQty, StringFormat='Stoc: {0} | '}" FontSize="11" Foreground="Gray" VerticalAlignment="Center"/>
+
+                                            <TextBlock Text="{Binding RequiredQty, StringFormat='Necesar: {0}'}" FontSize="11" FontWeight="Bold" Foreground="#1A3D73" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </GroupBox>
+
+                <!-- MAINTENANCE -->
+                <GroupBox Grid.Row="3" Header="Mentenanță" Margin="0,10,0,0" Padding="10">
+                    <DockPanel>
+                        <StackPanel>
+                            <TextBlock Text="Ultima Revizie:" FontSize="11" Foreground="Gray"/>
+                            <TextBlock x:Name="txtLastService" Text="2026-02-10" FontWeight="Bold" FontSize="14" Foreground="#1A3D73"/>
+                        </StackPanel>
+                        <Button Content="SOLICITĂ SERVICE" HorizontalAlignment="Right" VerticalAlignment="Center"
                                 Background="#FF8C00" Foreground="White" FontWeight="Bold" Padding="15,8"
                                 Click="btnMaintenance_Click"/>
-					</DockPanel>
-				</GroupBox>
-			</Grid>
+                    </DockPanel>
+                </GroupBox>
+            </Grid>
 
-			<!-- COLOANA 3: MONITORIZARE BATCH -->
-			<GroupBox Header="Monitorizare Batch" Grid.Column="2">
-				<StackPanel VerticalAlignment="Center">
-					<TextBlock Text="TIMP ESTIMAT FINALIZARE" HorizontalAlignment="Center" Foreground="#555" FontWeight="Bold"/>
-					<Grid Margin="0,25">
-						<Ellipse Stroke="#E0E0E0" StrokeThickness="10" Width="170" Height="170"/>
-						<StackPanel VerticalAlignment="Center">
-							<TextBlock x:Name="txtTimeRemaining" Text="00:00:00" FontSize="34" FontWeight="Black" Foreground="#1A3D73" HorizontalAlignment="Center"/>
-							<TextBlock Text="HH:MM:SS" FontSize="10" Foreground="Gray" HorizontalAlignment="Center"/>
-						</StackPanel>
-					</Grid>
-					<ProgressBar x:Name="pbBatchProgress" Height="22" Margin="20,0" Foreground="#28A745" Background="#DDD"/>
-					<TextBlock Text="Progres Producție" HorizontalAlignment="Center" Margin="0,10,0,0" FontSize="11" Foreground="Gray"/>
-				</StackPanel>
-			</GroupBox>
-		</Grid>
+            <!-- COLOANA 3: MONITORIZARE BATCH -->
+            <GroupBox Header="Monitorizare Batch" Grid.Column="2">
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="TIMP ESTIMAT FINALIZARE" HorizontalAlignment="Center" Foreground="#555" FontWeight="Bold"/>
+                    <Grid Margin="0,25">
+                        <Ellipse Stroke="#E0E0E0" StrokeThickness="10" Width="170" Height="170"/>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock x:Name="txtTimeRemaining" Text="00:00:00" FontSize="34" FontWeight="Black" Foreground="#1A3D73" HorizontalAlignment="Center"/>
+                            <TextBlock Text="HH:MM:SS" FontSize="10" Foreground="Gray" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+                    <ProgressBar x:Name="pbBatchProgress" Height="22" Margin="20,0" Foreground="#28A745" Background="#DDD"/>
+                    <TextBlock Text="Progres Producție" HorizontalAlignment="Center" Margin="0,10,0,0" FontSize="11" Foreground="Gray"/>
+                </StackPanel>
+            </GroupBox>
+        </Grid>
 
-		<!-- FOOTER CONTROLS -->
-		<UniformGrid Grid.Row="2" Columns="3" Height="85" Margin="0,15,0,0">
-			<Button Content="START" Background="#28A745" Foreground="White" FontWeight="Bold" FontSize="22" Margin="5" Click="btnStart_Click"/>
-			<Button Content="STOP" Background="#FFC107" Foreground="#333" FontWeight="Bold" FontSize="22" Margin="5" Click="btnStop_Click"/>
-			<Button Content="E-STOP" Background="#DC3545" Foreground="White" FontWeight="Bold" FontSize="22" Margin="5" Click="btnEStop_Click"/>
-		</UniformGrid>
-	</Grid>
+        <!-- FOOTER CONTROLS -->
+        <UniformGrid Grid.Row="2" Columns="3" Height="85" Margin="0,15,0,0">
+            <Button Content="START" Background="#28A745" Foreground="White" FontWeight="Bold" FontSize="22" Margin="5" Click="btnStart_Click"/>
+            <Button Content="STOP" Background="#FFC107" Foreground="#333" FontWeight="Bold" FontSize="22" Margin="5" Click="btnStop_Click"/>
+            <Button Content="E-STOP" Background="#DC3545" Foreground="White" FontWeight="Bold" FontSize="22" Margin="5" Click="btnEStop_Click"/>
+        </UniformGrid>
+    </Grid>
 </Window>

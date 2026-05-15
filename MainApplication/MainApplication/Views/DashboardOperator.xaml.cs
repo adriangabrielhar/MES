@@ -59,7 +59,8 @@ namespace MainApplication.Views
                             LineName = station.WorkstationName,
                             IsOccupied = station.IsOnline,
                             StatusText = station.IsOnline ? "ONLINE" : "OFFLINE",
-                            CurrentProduct = "În așteptare..."
+                            CurrentProduct = "În așteptare...",
+                            LineType = station.LineType
                         });
                     }
                 }

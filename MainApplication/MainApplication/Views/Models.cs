@@ -33,6 +33,7 @@ namespace MainApplication.Views
         private bool _isOccupied;
         private string _statusText = "AVAILABLE";
         private string _currentProduct = "None";
+        private string _lineType = "Final Product";
 
         public string LineName { get; set; } = string.Empty;
         public bool IsOccupied
@@ -49,6 +50,11 @@ namespace MainApplication.Views
         {
             get => _currentProduct;
             set { _currentProduct = value; OnPropertyChanged(); }
+        }
+        public string LineType
+        {
+            get => _lineType;
+            set { _lineType = value; OnPropertyChanged(); }
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
