@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Input;
 using MainApplication.Models;
 using System.Windows.Threading;
+using System.Windows.Controls;
 
 namespace MainApplication.Views
 {
@@ -109,6 +110,99 @@ namespace MainApplication.Views
             if (addLineWin.ShowDialog() == true)
             {
                 LoadDataFromDatabase();
+            }
+        }
+
+        private void btnDeleteLine_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                using (var context = new MESDbContext())
+                {
+                    // Preluăm numele tuturor liniilor existente în baza de date
+                    var lineNames = context.Workstations.Select(w => w.WorkstationName).ToList();
+
+                    if (!lineNames.Any())
+                    {
+                        MessageBox.Show("Nu există linii de producție disponibile pentru ștergere.", "Informație", MessageBoxButton.OK, MessageBoxImage.Information);
+                        return;
+                    }
+
+                    // Generăm o mini-fereastră de dialog direct din cod pentru selecție rapidă
+                    Window dialog = new Window
+                    {
+                        Title = "Șterge Linie de Producție",
+                        Width = 350,
+                        Height = 180,
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        Owner = this,
+                        ResizeMode = ResizeMode.NoResize,
+                        Background = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#F0F2F5"))
+                    };
+
+                    StackPanel panel = new StackPanel { Margin = new Thickness(20) };
+
+                    panel.Children.Add(new TextBlock { Text = "Selectați linia pe care doriți să o ștergeți:", Margin = new Thickness(0, 0, 0, 10), FontWeight = FontWeights.Medium });
+
+                    ComboBox cmbLines = new ComboBox { ItemsSource = lineNames, Height = 30, VerticalContentAlignment = VerticalAlignment.Center };
+                    cmbLines.SelectedIndex = 0;
+                    panel.Children.Add(cmbLines);
+
+                    Button btnDelete = new Button
+                    {
+                        Content = "ȘTERGE LINIA",
+                        Height = 32,
+                        Margin = new Thickness(0, 15, 0, 0),
+                        Background = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#D9534F")),
+                        Foreground = System.Windows.Media.Brushes.White,
+                        FontWeight = FontWeights.Bold
+                    };
+
+                    // Logica la apasarea butonului din mini-dialog
+                    btnDelete.Click += (s, args) =>
+                    {
+                        string selectedLine = cmbLines.SelectedItem as string;
+                        if (string.IsNullOrEmpty(selectedLine)) return;
+
+                        var result = MessageBox.Show($"Sunteți sigur că doriți să ștergeți definitiv linia '{selectedLine}'?\nAceastă acțiune o va elimina și din baza de date.", "Confirmare Ștergere", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+                        if (result == MessageBoxResult.Yes)
+                        {
+                            try
+                            {
+                                using (var deleteContext = new MESDbContext())
+                                {
+                                    var station = deleteContext.Workstations.FirstOrDefault(w => w.WorkstationName == selectedLine);
+                                    if (station != null)
+                                    {
+                                        deleteContext.Workstations.Remove(station);
+                                        deleteContext.SaveChanges();
+                                    }
+                                }
+                                dialog.DialogResult = true;
+                                dialog.Close();
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show($"Eroare la ștergerea din baza de date: {ex.Message}", "Eroare DB", MessageBoxButton.OK, MessageBoxImage.Error);
+                            }
+                        }
+                    };
+
+                    panel.Children.Add(btnDelete);
+                    dialog.Content = panel;
+
+                    // Dacă ștergerea s-a finalizat cu succes, reîmprospătăm interfața principală
+                    if (dialog.ShowDialog() == true)
+                    {
+                        MessageBox.Show("Linia de producție a fost eliminată cu succes!", "Succes", MessageBoxButton.OK, MessageBoxImage.Information);
+                        LoadDataFromDatabase(); // Actualizează dashboard-ul și cardurile instant
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Eroare la încărcarea datelor: {ex.Message}", "Eroare", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

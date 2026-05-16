@@ -14,7 +14,7 @@ namespace MainApplication.Views
         private string _currentProductConfig = "";
 
         // Baza de date configurată pentru ecosistemul complet de producție
-        
+
         private Dictionary<string, ProductConfig> productConfigs = new Dictionary<string, ProductConfig>
         {
         // ==========================================
@@ -198,7 +198,12 @@ namespace MainApplication.Views
                 using (var context = new MESDbContext())
                 {
                     var inventoryItems = context.InventoryItems.ToList();
-                    lstRestockItems.ItemsSource = inventoryItems.Select(item => new MaterialStock { Name = item.ItemName }).ToList();
+                    lstRestockItems.ItemsSource = inventoryItems.Select(item => new MaterialStock
+                    {
+                        Id = item.Id, // Preia Id-ul din DB
+                        Name = item.ItemName,
+                        RequestedQuantity = 0 // Default 0
+                    }).ToList();
                 }
             }
             catch
@@ -271,7 +276,11 @@ namespace MainApplication.Views
 
         private void RefreshConfigurationAndBOM()
         {
-            if (cmbProductSelection.SelectedItem == null) return;
+            if (cmbProductSelection.SelectedItem == null)
+            {
+                btnAutoRequestBOM.Visibility = Visibility.Collapsed;
+                return;
+            }
             var config = productConfigs[cmbProductSelection.SelectedItem.ToString()];
             UpdateConfigurationSummary(config);
             UpdateDynamicBOM(config);
@@ -383,6 +392,10 @@ namespace MainApplication.Views
             }
 
             icBOMStatus.ItemsSource = bomItems;
+
+            // Afișăm butonul DOAR dacă există cel puțin un material unde stocul este insuficient
+            bool hasMissingItems = bomItems.Any(i => i.AvailableQty < i.RequiredQty);
+            btnAutoRequestBOM.Visibility = hasMissingItems ? Visibility.Visible : Visibility.Collapsed;
         }
 
         // ==========================================
@@ -419,24 +432,60 @@ namespace MainApplication.Views
         {
             if (cmbProductSelection.SelectedItem == null) { MessageBox.Show("Selectați un produs!"); return; }
 
-            // Opțional: Poți bloca startul liniei dacă vreun item din BOM este pe roșu (stoc insuficient)
-            if (icBOMStatus.ItemsSource.Cast<BOMStatusItem>().Any(i => i.TextColor == Brushes.Red))
-            { MessageBox.Show("Nu ai toate materialele în stoc pentru a porni producția!"); return; }
+            // Preluăm lista de materiale necesare (BOM) din interfață
+            var bomItems = icBOMStatus.ItemsSource.Cast<BOMStatusItem>().ToList();
+
+            // Verificăm dacă avem suficient stoc
+            if (bomItems.Any(i => i.TextColor == Brushes.Red))
+            {
+                MessageBox.Show("Nu ai toate materialele în stoc pentru a porni producția!");
+                return;
+            }
+
+            // Scădem materialele din baza de date
+            try
+            {
+                using (var context = new MESDbContext())
+                {
+                    foreach (var item in bomItems)
+                    {
+                        var dbItem = context.InventoryItems.FirstOrDefault(i => i.ItemName == item.MaterialName);
+                        if (dbItem != null)
+                        {
+                            dbItem.AvailableQuantity -= item.RequiredQty;
+                        }
+                    }
+                    context.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Eroare la extragerea materialelor din inventar: {ex.Message}", "Eroare DB", MessageBoxButton.OK, MessageBoxImage.Error);
+                return; // Oprim startul dacă a picat baza de date
+            }
 
             _line.IsOccupied = true;
             _line.StatusText = "RUNNING";
             _line.CurrentProduct = _currentProductConfig;
+
             UpdateUI();
+            RefreshConfigurationAndBOM(); // Actualizează interfața să arate stocul nou
         }
 
         private void btnStop_Click(object sender, RoutedEventArgs e)
         {
-            if (_line.StatusText != "RUNNING") return;
+            // Dacă linia este pornită, nu dăm voie opririi normale
+            if (_line.StatusText == "RUNNING")
+            {
+                MessageBox.Show("Producția este în desfășurare!\nOprirea standard nu este permisă. Folosiți E-STOP pentru oprire forțată.", "Acțiune Blocată", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
+            // Codul de oprire standard (în caz că ai stări precum PAUSED pe viitor)
             _line.IsOccupied = false;
             _line.StatusText = "STOPPED";
 
-            // Obținem numele exact, formatat perfect
+            // Obținem numele exact și salvăm
             string inventoryName = GetExactInventoryName();
             if (!string.IsNullOrEmpty(inventoryName))
             {
@@ -481,42 +530,178 @@ namespace MainApplication.Views
             }
         }
 
-        private void btnEStop_Click(object sender, RoutedEventArgs e) { _line.IsOccupied = true; _line.StatusText = "EMERGENCY"; UpdateUI(); MessageBox.Show("OPRIRE DE URGENȚĂ!"); }
-        private void btnRequestRestock_Click(object sender, RoutedEventArgs e) { MessageBox.Show($"Cerere reaprovizionare trimisă!"); }
+        private void btnEStop_Click(object sender, RoutedEventArgs e)
+        {
+            if (_line.StatusText == "EMERGENCY") return; // Deja în avarie
+
+            // Trecem linia în stare de urgență (nu adăugăm nimic în inventar)
+            _line.IsOccupied = false; // Eliberăm linia (pune true dacă vrei să rămână blocată)
+            _line.StatusText = "EMERGENCY";
+
+            UpdateUI();
+            MessageBox.Show("🚨 OPRIRE DE URGENȚĂ ACTIVATĂ!\nProducția a fost întreruptă forțat.", "E-STOP", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
         private void btnMaintenance_Click(object sender, RoutedEventArgs e) { MessageBox.Show("Mentenanța a fost notificată."); }
-    }
 
-    public class ProductConfig
-    {
-        public string Name { get; set; }
-        public string Category { get; set; }
-        public string LineType { get; set; }
+        private void btnAutoRequestBOM_Click(object sender, RoutedEventArgs e)
+        {
+            if (icBOMStatus.ItemsSource == null) return;
 
-        public string[] StorageOptions { get; set; }
-        public string[] RAMOptions { get; set; }
-        public string[] DisplayOptions { get; set; }
-        public string DefaultStorage { get; set; }
-        public string DefaultRAM { get; set; }
-        public string DefaultDisplay { get; set; }
-        public string ProductionTime { get; set; }
+            var bomItems = icBOMStatus.ItemsSource.Cast<BOMStatusItem>().ToList();
+            var missingItems = bomItems.Where(i => i.AvailableQty < i.RequiredQty).ToList();
 
-        public (string Name, string Category)[] BaseBOM { get; set; }
+            if (!missingItems.Any())
+            {
+                MessageBox.Show("Ai deja stoc suficient pentru toate materialele necesare acestui produs!", "Informație", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
 
-        public string OutputFormat { get; set; } // Formatul salvat în Baza de Date
-        public string DynamicPCBFormat { get; set; }
-        public string DynamicDisplayFormat { get; set; }
+            try
+            {
+                int newOrderId = 1;
+                List<string> unmappedMaterials = new List<string>();
 
-        public bool IsPCBAssembly { get; set; }
-        public bool IsScreenAssembly { get; set; }
-    }
+                using (var context = new MESDbContext())
+                {
+                    if (context.OrderMaterials.Any())
+                    {
+                        newOrderId = context.OrderMaterials.Max(o => o.OrderId) + 1;
+                    }
 
-    public class MaterialStock { public string Name { get; set; } }
-    public class BOMStatusItem
-    {
-        public string MaterialName { get; set; }
-        public int AvailableQty { get; set; }
-        public int RequiredQty { get; set; }
-        public Visibility WarningVisibility { get; set; }
-        public Brush TextColor { get; set; }
+                    foreach (var item in missingItems)
+                    {
+                        // Căutare flexibilă (fără spații libere la capete și case-insensitive)
+                        var dbItem = context.InventoryItems.FirstOrDefault(i =>
+                            i.ItemName.Trim().ToLower() == item.MaterialName.Trim().ToLower());
+
+                        if (dbItem != null)
+                        {
+                            int deficit = item.RequiredQty - item.AvailableQty;
+
+                            var orderLine = new MainApplication.Models.OrderMaterial
+                            {
+                                OrderId = newOrderId,
+                                ItemId = dbItem.Id,
+                                QuantityNeeded = deficit
+                            };
+                            context.OrderMaterials.Add(orderLine);
+                        }
+                        else
+                        {
+                            // Reținem materialele care nu există în baza de date ca denumire exactă
+                            unmappedMaterials.Add(item.MaterialName);
+                        }
+                    }
+
+                    // Dacă s-au găsit nepotriviri de nume între cod și DB, oprim procesul și alertăm
+                    if (unmappedMaterials.Any())
+                    {
+                        MessageBox.Show($"Comanda nu s-a putut plasa deoarece următoarele materiale nu au fost găsite în tabela InventoryItems din DB:\n\n• {string.Join("\n• ", unmappedMaterials)}\n\nVerifică dacă denumirile din cod coincid cu cele din baza de date!", "Eroare Mapare Materiale", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    // Dacă totul a fost mapat corect, salvăm în baza de date
+                    context.SaveChanges();
+                    MessageBox.Show($"Comanda automată #{newOrderId} pentru materialele lipsă a fost plasată cu succes!", "Succes", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Eroare la plasarea comenzii automate: {ex.Message}", "Eroare DB", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void btnSubmitOrder_Click(object sender, RoutedEventArgs e)
+        {
+            var cartItems = lstRestockItems.ItemsSource.Cast<MaterialStock>()
+                                .Where(m => m.RequestedQuantity > 0)
+                                .ToList();
+
+            if (!cartItems.Any())
+            {
+                MessageBox.Show("Coșul este gol! Introdu o cantitate pentru cel puțin un material.");
+                return;
+            }
+
+            try
+            {
+                int newOrderId = 1; // Mutat deasupra blocului using pentru a fi vizibil la final
+
+                using (var context = new MESDbContext())
+                {
+                    if (context.OrderMaterials.Any())
+                    {
+                        newOrderId = context.OrderMaterials.Max(o => o.OrderId) + 1;
+                    }
+
+                    foreach (var item in cartItems)
+                    {
+                        // Folosim explicit clasa din folderul Models
+                        var orderLine = new MainApplication.Models.OrderMaterial
+                        {
+                            OrderId = newOrderId,
+                            ItemId = item.Id,
+                            QuantityNeeded = item.RequestedQuantity
+                        };
+                        context.OrderMaterials.Add(orderLine);
+                    }
+
+                    context.SaveChanges();
+                }
+
+                MessageBox.Show($"Comanda #{newOrderId} a fost plasată cu succes!", "Succes", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                foreach (var item in cartItems)
+                {
+                    item.RequestedQuantity = 0;
+                }
+                lstRestockItems.Items.Refresh();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Eroare la procesarea comenzii: {ex.Message}", "Eroare DB", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        public class ProductConfig
+        {
+            public string Name { get; set; }
+            public string Category { get; set; }
+            public string LineType { get; set; }
+
+            public string[] StorageOptions { get; set; }
+            public string[] RAMOptions { get; set; }
+            public string[] DisplayOptions { get; set; }
+            public string DefaultStorage { get; set; }
+            public string DefaultRAM { get; set; }
+            public string DefaultDisplay { get; set; }
+            public string ProductionTime { get; set; }
+
+            public (string Name, string Category)[] BaseBOM { get; set; }
+
+            public string OutputFormat { get; set; } // Formatul salvat în Baza de Date
+            public string DynamicPCBFormat { get; set; }
+            public string DynamicDisplayFormat { get; set; }
+
+            public bool IsPCBAssembly { get; set; }
+            public bool IsScreenAssembly { get; set; }
+        }
+
+        public class MaterialStock
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+            public int RequestedQuantity { get; set; }
+        }
+
+        public class BOMStatusItem
+        {
+            public string MaterialName { get; set; }
+            public int AvailableQty { get; set; }
+            public int RequiredQty { get; set; }
+            public Visibility WarningVisibility { get; set; }
+            public Brush TextColor { get; set; }
+        }
     }
 }

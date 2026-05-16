@@ -56,7 +56,10 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <Button Content="+ ADD LINE" Click="btnAddLine_Click" HorizontalAlignment="Right" Margin="0,0,0,15" Background="Green" Foreground="White" Padding="10,5"/>
+						<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,15">
+							<Button Content="+ ADD LINE" Click="btnAddLine_Click" Background="Green" Foreground="White" Padding="10,5"/>
+							<Button Content="- DELETE LINE" Click="btnDeleteLine_Click" Background="#D9534F" Foreground="White" Padding="10,5" Margin="10,0,0,0"/>
+						</StackPanel>
                         <ScrollViewer Grid.Row="1">
                             <ItemsControl x:Name="LinesControl">
                                 <ItemsControl.ItemsPanel>
