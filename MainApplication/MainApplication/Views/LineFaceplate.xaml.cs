@@ -379,8 +379,17 @@ namespace MainApplication.Views
                     }
                     else if (_line.StatusText == "FINISHED")
                     {
+                        // Ne asigurăm că timer-ul se oprește dacă statusul e FINISHED
+                        if (_productionTimer != null) _productionTimer.Stop();
                         txtTimeRemaining.Text = "00:00:00";
                         pbBatchProgress.Value = 100;
+                    }
+                    else if (_line.StatusText == "EMERGENCY" || _line.StatusText == "ONLINE")
+                    {
+                        // AICI ERA PROBLEMA: Oprim timerul forțat și resetăm bara de progres
+                        if (_productionTimer != null) _productionTimer.Stop();
+                        txtTimeRemaining.Text = "00:00:00";
+                        pbBatchProgress.Value = 0; // Golim bara verde
                     }
                 }
             }
