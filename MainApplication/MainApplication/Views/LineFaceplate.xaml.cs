@@ -15,6 +15,45 @@ namespace MainApplication.Views
         private System.Windows.Threading.DispatcherTimer _productionTimer;
         private DateTime _expectedEndTime;
         private int _totalCycleSeconds;
+        private System.Windows.Threading.DispatcherTimer _pollingTimer;
+
+        private void SetupPollingTimer()
+        {
+            _pollingTimer = new System.Windows.Threading.DispatcherTimer();
+            _pollingTimer.Interval = TimeSpan.FromSeconds(2); // Verifică din 2 în 2 secunde
+            _pollingTimer.Tick += PollingTimer_Tick;
+            _pollingTimer.Start();
+        }
+
+        private void PollingTimer_Tick(object sender, EventArgs e)
+        {
+            try
+            {
+                using (var context = new MESDbContext())
+                {
+                    var ws = context.Workstations.FirstOrDefault(w => w.WorkstationName == _line.LineName);
+                    if (ws != null)
+                    {
+                        // Dacă starea de pe server e diferită de ce știm noi pe plan local
+                        if (ws.CurrentStatus != _line.StatusText)
+                        {
+                            // Un alt utilizator a schimbat starea (ex: E-STOP, START sau a dat STOP)
+                            SyncStateFromDatabase();
+
+                            // Opțional: Dacă cineva a dat E-STOP, afișăm și un mesaj celui care se uită la ecran
+                            if (ws.CurrentStatus == "EMERGENCY")
+                            {
+                                MessageBox.Show("Linia a fost oprită de urgență de la un alt terminal!", "Avertizare Sistem", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Ignorăm erorile aici ca să nu blocăm ecranul dacă pică netul o secundă
+            }
+        }
 
         // Baza de date configurată pentru ecosistemul complet de producție
 
@@ -193,6 +232,22 @@ namespace MainApplication.Views
             cmbProductSelection.ItemsSource = allowedProducts;
             UpdateUI();
             SyncStateFromDatabase();
+            SetupPollingTimer();
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            if (_pollingTimer != null)
+            {
+                _pollingTimer.Stop();
+            }
+
+            if (_productionTimer != null)
+            {
+                _productionTimer.Stop();
+            }
+
+            base.OnClosed(e);
         }
 
         private void LoadMaterialsFromDatabase()
