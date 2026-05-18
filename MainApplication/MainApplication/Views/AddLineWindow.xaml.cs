@@ -46,7 +46,6 @@ namespace MainApplication.Views
                         WorkstationName = lineName,
                         IsOnline = true,
                         LineType = lineType,
-                        CurrentOrderId = null
                     };
 
                     context.Workstations.Add(newStation);

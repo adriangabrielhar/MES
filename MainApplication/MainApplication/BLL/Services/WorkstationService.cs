@@ -17,9 +17,8 @@ namespace MainApplication.BLL.Services
         {
             var station = _context.Workstations.Find(stationId);
 
-            if (station != null && station.IsOnline && station.CurrentOrderId == null)
+            if (station != null && station.IsOnline)
             {
-                station.CurrentOrderId = orderId;
                 _context.Workstations.Update(station);
                 _context.SaveChanges(); // Salvăm direct în baza de date
                 return true;
@@ -33,7 +32,6 @@ namespace MainApplication.BLL.Services
             if (station != null)
             {
                 station.IsOnline = false;
-                station.CurrentOrderId = null;
                 _context.Workstations.Update(station);
                 _context.SaveChanges(); // Salvăm direct în baza de date
             }

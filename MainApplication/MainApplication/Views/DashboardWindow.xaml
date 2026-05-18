@@ -10,16 +10,16 @@
         </Grid.RowDefinitions>
 
         <!-- HEADER -->
-        <Border Background="#1A3D73">
-            <DockPanel Margin="20,0">
-                <TextBlock Text="XACT-FIL ADMIN" Foreground="White" VerticalAlignment="Center" FontWeight="Bold" FontSize="18"/>
-                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                    <!-- BUTON NOU: GESTIONARE USERI -->
-                    <Button Content="MANAGE USERS" Click="btnManageUsers_Click" Width="120" Height="30" Margin="0,0,10,0" Background="#2C5AA0" Foreground="White" FontWeight="Bold"/>
-                    <Button Content="LOGOUT" Click="btnLogout_Click" Width="80" Height="30" Background="#D9534F" Foreground="White"/>
-                </StackPanel>
-            </DockPanel>
-        </Border>
+		<Border Background="#1A3D73">
+			<Grid Margin="20,0">
+				<TextBlock Text="NOOT NOOT MANUFACTURING ADMIN" Foreground="White" VerticalAlignment="Center" FontWeight="Bold" FontSize="18" HorizontalAlignment="Left"/>
+
+				<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+					<Button Content="MANAGE USERS" Click="btnManageUsers_Click" Width="120" Height="30" Margin="0,0,10,0" Background="#2C5AA0" Foreground="White" FontWeight="Bold"/>
+					<Button Content="LOGOUT" Click="btnLogout_Click" Width="80" Height="30" Background="#D9534F" Foreground="White"/>
+				</StackPanel>
+			</Grid>
+		</Border>
 
         <TabControl Grid.Row="1" Background="Transparent" BorderThickness="0">
             <!-- OVERVIEW: Neschimbat -->

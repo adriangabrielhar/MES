@@ -215,6 +215,7 @@ namespace MainApplication.Views
         private void UpdateUI()
         {
             txtLineName.Text = _line.LineName;
+            txtLineType.Text = $"| Expertiză: {_line.LineType}";
             txtProduct.Text = string.IsNullOrEmpty(_line.CurrentProduct) ? "Product: În așteptare..." : $"Product: {_line.CurrentProduct}";
             lblStatus.Text = _line.StatusText;
 
@@ -430,6 +431,12 @@ namespace MainApplication.Views
         // ==========================================
         private void btnStart_Click(object sender, RoutedEventArgs e)
         {
+            if (_line.StatusText == "RUNNING")
+            {
+                MessageBox.Show("Producția este deja în desfășurare pe această linie!", "Acțiune Blocată", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             if (cmbProductSelection.SelectedItem == null) { MessageBox.Show("Selectați un produs!"); return; }
 
             // Preluăm lista de materiale necesare (BOM) din interfață

@@ -31,9 +31,17 @@ namespace MainApplication.Views
         private void UpdateStats()
         {
             if (txtTotalLines == null) return;
+
+            // 1. Numărul total de linii
             txtTotalLines.Text = Lines.Count.ToString();
-            txtRunningLines.Text = Lines.Count(l => l.IsOccupied).ToString();
-            txtAvailableLines.Text = (Lines.Count - Lines.Count(l => l.IsOccupied)).ToString();
+
+            // 2. Liniile care sunt cu ADEVĂRAT în producție (au statusul RUNNING)
+            int runningCount = Lines.Count(l => l.StatusText == "RUNNING" && l.IsOccupied);
+            txtRunningLines.Text = runningCount.ToString();
+
+            // 3. Liniile disponibile (Total minus cele care rulează)
+            int availableCount = Lines.Count - runningCount;
+            txtAvailableLines.Text = availableCount.ToString();
         }
 
         // DESCHIDE FEREASTRA DE GESTIONARE USERI
