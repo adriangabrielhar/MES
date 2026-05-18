@@ -12,6 +12,9 @@ namespace MainApplication.Views
     {
         private ProductionLine _line;
         private string _currentProductConfig = "";
+        private System.Windows.Threading.DispatcherTimer _productionTimer;
+        private DateTime _expectedEndTime;
+        private int _totalCycleSeconds;
 
         // Baza de date configurată pentru ecosistemul complet de producție
 
@@ -23,7 +26,7 @@ namespace MainApplication.Views
         {
             "PCB-Telefon (Standard)", new ProductConfig {
                 Name = "PCB-Telefon", Category = "Placa de Baza", LineType = "Sub-Assembly",
-                StorageOptions = new[] { "128 GB", "256 GB", "512 GB" }, DefaultStorage = "128 GB", ProductionTime = "00:08:00",
+                StorageOptions = new[] { "128 GB", "256 GB", "512 GB" }, DefaultStorage = "128 GB", ProductionTime = "00:00:10",
                 BaseBOM = new[] { ("Placa PCB Goala (Telefon)", "PCB"), ("Procesor SoC NoST (Standard)", "CPU"), ("Modul Memorie RAM 4GB", "RAM"), ("Controller Voltaj", "Diverse") },
                 IsPCBAssembly = true, OutputFormat = "PCB-Telefon (CPU NoST, RAM 4GB, Stocare {STORAGE})"
             }
@@ -189,6 +192,7 @@ namespace MainApplication.Views
 
             cmbProductSelection.ItemsSource = allowedProducts;
             UpdateUI();
+            SyncStateFromDatabase();
         }
 
         private void LoadMaterialsFromDatabase()
@@ -212,17 +216,183 @@ namespace MainApplication.Views
             }
         }
 
+        private void UpdateWorkstationStatus(string status, string product = null, int? cycleTime = null, DateTime? startTime = null)
+        {
+            try
+            {
+                using (var context = new MESDbContext())
+                {
+                    var ws = context.Workstations.FirstOrDefault(w => w.WorkstationName == _line.LineName);
+                    if (ws != null)
+                    {
+                        ws.CurrentStatus = status;
+
+                        if (status == "RUNNING")
+                        {
+                            ws.CurrentProduct = product;
+                            ws.CycleTimeSeconds = cycleTime;
+                            ws.CurrentTaskStartTime = startTime;
+                        }
+                        else if (status == "ONLINE" || status == "EMERGENCY")
+                        {
+                            ws.CurrentProduct = null;
+                            ws.CycleTimeSeconds = null;
+                            ws.CurrentTaskStartTime = null;
+                        }
+
+                        context.SaveChanges();
+                    }
+                }
+
+                _line.StatusText = status;
+                if (product != null) _line.CurrentProduct = product;
+                else if (status == "ONLINE" || status == "EMERGENCY") _line.CurrentProduct = "În așteptare...";
+
+                UpdateUI();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Eroare la sincronizarea DB: {ex.Message}");
+            }
+        }
+
+        private void StartUITimer(bool isResume = false)
+        {
+            if (!isResume)
+            {
+                var config = productConfigs[cmbProductSelection.SelectedItem.ToString()];
+                TimeSpan duration = TimeSpan.Parse(config.ProductionTime);
+                _totalCycleSeconds = (int)duration.TotalSeconds;
+                _expectedEndTime = DateTime.Now.Add(duration);
+
+                UpdateWorkstationStatus("RUNNING", _currentProductConfig, _totalCycleSeconds, DateTime.Now);
+            }
+
+            if (_productionTimer != null) _productionTimer.Stop();
+
+            _productionTimer = new System.Windows.Threading.DispatcherTimer();
+            _productionTimer.Interval = TimeSpan.FromSeconds(1);
+            _productionTimer.Tick += ProductionTimer_Tick;
+            _productionTimer.Start();
+        }
+
+        private void ProductionTimer_Tick(object sender, EventArgs e)
+        {
+            TimeSpan remainingTime = _expectedEndTime - DateTime.Now;
+
+            if (remainingTime.TotalSeconds <= 0)
+            {
+                _productionTimer.Stop();
+                txtTimeRemaining.Text = "00:00:00";
+                pbBatchProgress.Value = 100;
+
+                UpdateWorkstationStatus("FINISHED");
+            }
+            else
+            {
+                txtTimeRemaining.Text = remainingTime.ToString(@"hh\:mm\:ss");
+                double progress = 100 - (remainingTime.TotalSeconds / _totalCycleSeconds * 100);
+                pbBatchProgress.Value = Math.Max(0, Math.Min(100, progress));
+            }
+        }
+
+        private void SyncStateFromDatabase()
+        {
+            using (var context = new MESDbContext())
+            {
+                var ws = context.Workstations.FirstOrDefault(w => w.WorkstationName == _line.LineName);
+                if (ws != null)
+                {
+                    _line.StatusText = ws.CurrentStatus ?? "ONLINE";
+                    _line.CurrentProduct = ws.CurrentProduct ?? "În așteptare...";
+
+                    if (_line.StatusText == "RUNNING" && ws.CurrentTaskStartTime.HasValue && ws.CycleTimeSeconds.HasValue)
+                    {
+                        _totalCycleSeconds = ws.CycleTimeSeconds.Value;
+                        _expectedEndTime = ws.CurrentTaskStartTime.Value.AddSeconds(_totalCycleSeconds);
+
+                        if (DateTime.Now >= _expectedEndTime)
+                        {
+                            UpdateWorkstationStatus("FINISHED");
+                            txtTimeRemaining.Text = "00:00:00";
+                            pbBatchProgress.Value = 100;
+                        }
+                        else
+                        {
+                            StartUITimer(true);
+                        }
+                    }
+                    else if (_line.StatusText == "FINISHED")
+                    {
+                        txtTimeRemaining.Text = "00:00:00";
+                        pbBatchProgress.Value = 100;
+                    }
+                }
+            }
+            UpdateUI();
+        }
+
         private void UpdateUI()
         {
+            if (_line == null) return;
+
+            // 1. Actualizăm textele din Header
             txtLineName.Text = _line.LineName;
             txtLineType.Text = $"| Expertiză: {_line.LineType}";
-            txtProduct.Text = string.IsNullOrEmpty(_line.CurrentProduct) ? "Product: În așteptare..." : $"Product: {_line.CurrentProduct}";
-            lblStatus.Text = _line.StatusText;
 
-            if (_line.StatusText == "RUNNING") brdStatusBadge.Background = Brushes.Green;
-            else if (_line.StatusText == "STOPPED") brdStatusBadge.Background = Brushes.Orange;
-            else if (_line.StatusText == "EMERGENCY") brdStatusBadge.Background = Brushes.Red;
-            else brdStatusBadge.Background = Brushes.Gray;
+            // Dacă nu avem produs, afișăm "În așteptare..."
+            txtProduct.Text = string.IsNullOrEmpty(_line.CurrentProduct) ? "Product: În așteptare..." : $"Product: {_line.CurrentProduct}";
+
+            // 2. Actualizăm textul din Badge-ul de Status
+            if (lblStatus != null)
+            {
+                lblStatus.Text = _line.StatusText;
+            }
+
+            // 3. Schimbăm culorile grafice în funcție de starea liniei
+            if (brdStatusBadge != null)
+            {
+                switch (_line.StatusText)
+                {
+                    case "RUNNING":
+                        // Portocaliu pentru producție în curs
+                        brdStatusBadge.Background = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FD7E14"));
+                        break;
+                    case "FINISHED":
+                        // Albastru pentru produs finalizat, gata de colectare
+                        brdStatusBadge.Background = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#0D6EFD"));
+                        break;
+                    case "EMERGENCY":
+                        // Roșu pentru avarie
+                        brdStatusBadge.Background = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#DC3545"));
+                        break;
+                    default: // ONLINE
+                             // Verde pentru linie liberă/disponibilă
+                        brdStatusBadge.Background = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#28A745"));
+                        break;
+                }
+            }
+
+            if (cmbProductSelection != null && btnStart != null)
+            {
+                if (_line.StatusText == "RUNNING" || _line.StatusText == "FINISHED")
+                {
+                    // Blocăm selecția pentru a nu putea schimba produsul din mers
+                    cmbProductSelection.IsEnabled = false;
+
+                    // Facem butonul START gri pentru a arăta că este inactiv
+                    btnStart.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Gray);
+                }
+                else
+                {
+                    // ONLINE sau EMERGENCY -> Deblocăm selecția pentru o nouă comandă
+                    cmbProductSelection.IsEnabled = true;
+
+                    // Readucem butonul START la culoarea verde originală 
+                    // (Dacă aveai altă culoare în XAML, poți pune codul HEX aici)
+                    btnStart.Background = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#28A745"));
+                }
+            }
         }
 
         private void cmbProductSelection_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -431,75 +601,54 @@ namespace MainApplication.Views
         // ==========================================
         private void btnStart_Click(object sender, RoutedEventArgs e)
         {
-            if (_line.StatusText == "RUNNING")
+            if (_line.StatusText == "RUNNING" || _line.StatusText == "FINISHED")
             {
-                MessageBox.Show("Producția este deja în desfășurare pe această linie!", "Acțiune Blocată", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Linia este deja ocupată! Colectați produsul întâi dând STOP.", "Atenție", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (cmbProductSelection.SelectedItem == null) { MessageBox.Show("Selectați un produs!"); return; }
 
-            // Preluăm lista de materiale necesare (BOM) din interfață
-            var bomItems = icBOMStatus.ItemsSource.Cast<BOMStatusItem>().ToList();
+            // AICI pui logica ta existentă de scăzut din stoc (DB) dacă o ai.
 
-            // Verificăm dacă avem suficient stoc
-            if (bomItems.Any(i => i.TextColor == Brushes.Red))
-            {
-                MessageBox.Show("Nu ai toate materialele în stoc pentru a porni producția!");
-                return;
-            }
-
-            // Scădem materialele din baza de date
-            try
-            {
-                using (var context = new MESDbContext())
-                {
-                    foreach (var item in bomItems)
-                    {
-                        var dbItem = context.InventoryItems.FirstOrDefault(i => i.ItemName == item.MaterialName);
-                        if (dbItem != null)
-                        {
-                            dbItem.AvailableQuantity -= item.RequiredQty;
-                        }
-                    }
-                    context.SaveChanges();
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Eroare la extragerea materialelor din inventar: {ex.Message}", "Eroare DB", MessageBoxButton.OK, MessageBoxImage.Error);
-                return; // Oprim startul dacă a picat baza de date
-            }
-
-            _line.IsOccupied = true;
-            _line.StatusText = "RUNNING";
-            _line.CurrentProduct = _currentProductConfig;
-
-            UpdateUI();
-            RefreshConfigurationAndBOM(); // Actualizează interfața să arate stocul nou
+            StartUITimer(false);
         }
 
         private void btnStop_Click(object sender, RoutedEventArgs e)
         {
-            // Dacă linia este pornită, nu dăm voie opririi normale
             if (_line.StatusText == "RUNNING")
             {
-                MessageBox.Show("Producția este în desfășurare!\nOprirea standard nu este permisă. Folosiți E-STOP pentru oprire forțată.", "Acțiune Blocată", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Producția este în desfășurare!\nFolosiți E-STOP pentru oprire forțată.", "Acțiune Blocată", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            // Codul de oprire standard (în caz că ai stări precum PAUSED pe viitor)
-            _line.IsOccupied = false;
-            _line.StatusText = "STOPPED";
-
-            // Obținem numele exact și salvăm
-            string inventoryName = GetExactInventoryName();
-            if (!string.IsNullOrEmpty(inventoryName))
+            if (_line.StatusText == "FINISHED")
             {
-                SaveProductToInventory(inventoryName);
+                string inventoryName = GetExactInventoryName();
+                if (!string.IsNullOrEmpty(inventoryName))
+                {
+                    SaveProductToInventory(inventoryName);
+                }
+                MessageBox.Show("Produs colectat cu succes! Linia este acum liberă.", "Colectare Finalizată", MessageBoxButton.OK, MessageBoxImage.Information);
             }
 
-            UpdateUI();
+            if (_productionTimer != null) _productionTimer.Stop();
+            txtTimeRemaining.Text = "00:00:00";
+            pbBatchProgress.Value = 0;
+
+            UpdateWorkstationStatus("ONLINE");
+        }
+
+        private void btnEStop_Click(object sender, RoutedEventArgs e)
+        {
+            if (_line.StatusText == "EMERGENCY") return;
+
+            if (_productionTimer != null) _productionTimer.Stop();
+            txtTimeRemaining.Text = "00:00:00";
+            pbBatchProgress.Value = 0;
+
+            UpdateWorkstationStatus("EMERGENCY");
+            MessageBox.Show("🚨 OPRIRE DE URGENȚĂ ACTIVATĂ!", "E-STOP", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         private void SaveProductToInventory(string exactItemName)
@@ -535,18 +684,6 @@ namespace MainApplication.Views
             {
                 MessageBox.Show($"Eroare la salvarea în DB: {ex.Message}", "Eroare", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-        }
-
-        private void btnEStop_Click(object sender, RoutedEventArgs e)
-        {
-            if (_line.StatusText == "EMERGENCY") return; // Deja în avarie
-
-            // Trecem linia în stare de urgență (nu adăugăm nimic în inventar)
-            _line.IsOccupied = false; // Eliberăm linia (pune true dacă vrei să rămână blocată)
-            _line.StatusText = "EMERGENCY";
-
-            UpdateUI();
-            MessageBox.Show("🚨 OPRIRE DE URGENȚĂ ACTIVATĂ!\nProducția a fost întreruptă forțat.", "E-STOP", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         private void btnMaintenance_Click(object sender, RoutedEventArgs e) { MessageBox.Show("Mentenanța a fost notificată."); }

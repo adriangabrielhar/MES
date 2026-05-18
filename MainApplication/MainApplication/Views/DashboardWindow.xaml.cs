@@ -72,8 +72,8 @@ namespace MainApplication.Views
                     Lines.Add(new ProductionLine
                     {
                         LineName = station.WorkstationName,
-                        IsOccupied = station.IsOnline,
-                        StatusText = station.IsOnline ? "ONLINE" : "OFFLINE",
+                        IsOccupied = station.CurrentStatus == "RUNNING",
+                        StatusText = station.CurrentStatus ?? "ONLINE",
                         CurrentProduct = "None",
                         LineType = station.LineType ?? "Final Product"
                     });

@@ -5,7 +5,6 @@ namespace MainApplication.BLL.Services
 {
     class WorkstationService
     {
-        // Folosim contextul direct în loc de IRepository
         private readonly MESDbContext _context;
 
         public WorkstationService(MESDbContext context)
@@ -17,10 +16,11 @@ namespace MainApplication.BLL.Services
         {
             var station = _context.Workstations.Find(stationId);
 
-            if (station != null && station.IsOnline)
+            // Modificarea 1 (Linia 20): Verificăm starea text a liniei
+            if (station != null && station.CurrentStatus == "ONLINE")
             {
                 _context.Workstations.Update(station);
-                _context.SaveChanges(); // Salvăm direct în baza de date
+                _context.SaveChanges();
                 return true;
             }
             return false;
@@ -31,9 +31,11 @@ namespace MainApplication.BLL.Services
             var station = _context.Workstations.Find(stationId);
             if (station != null)
             {
-                station.IsOnline = false;
+                // Modificarea 2 (Linia 34): Setăm statusul pe OFFLINE sau EMERGENCY
+                station.CurrentStatus = "OFFLINE";
+
                 _context.Workstations.Update(station);
-                _context.SaveChanges(); // Salvăm direct în baza de date
+                _context.SaveChanges();
             }
         }
     }

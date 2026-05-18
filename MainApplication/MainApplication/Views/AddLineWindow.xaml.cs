@@ -44,7 +44,7 @@ namespace MainApplication.Views
                     var newStation = new Workstation
                     {
                         WorkstationName = lineName,
-                        IsOnline = true,
+                        CurrentStatus = "ONLINE",
                         LineType = lineType,
                     };
 

@@ -81,7 +81,10 @@ namespace MainApplication.BLL
             return new DashboardData
             {
                 ActiveOrderCount = _context.ProductionOrders.Count(o => o.StatusName == "InAssembly" || o.StatusName == "New"),
-                OfflineWorkstationsCount = _context.Workstations.Count(w => !w.IsOnline),
+
+                // AICI E MODIFICAREA: Numărăm stațiile care sunt trecute ca OFFLINE sau în EMERGENCY
+                OfflineWorkstationsCount = _context.Workstations.Count(w => w.CurrentStatus == "OFFLINE" || w.CurrentStatus == "EMERGENCY"),
+
                 ItemsBelowAlertThreshold = _inventoryService.GetItemsBelowThreshold().Select(i => i.ItemName).ToList(),
                 RecentActivityLogs = _context.ProductionLogs.OrderByDescending(l => l.Timestamp).Take(5).Select(l => l.ActionDescription).ToList()
             };
