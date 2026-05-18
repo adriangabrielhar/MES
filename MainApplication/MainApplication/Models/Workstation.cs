@@ -11,5 +11,7 @@ namespace MainApplication.Models
         public bool IsOnline { get; set; }
         public int? CurrentOrderId { get; set; }
         public string LineType { get; set; } = "Final Product"; // "Sub-Assembly" or "Final Product"
+        public int? CycleTimeSeconds { get; set; }
+        public DateTime? CurrentTaskStartTime { get; set; }
     }
 }
